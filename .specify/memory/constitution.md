@@ -1,55 +1,121 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+
+- Version change: 0.0.0 → 1.0.0
+- Modified principles: Template placeholders → Bronze-tier constitution principles
+- Added sections: Project Guardrails; Workflow & Quality Gates
+- Removed sections: None
+- Templates requiring updates:
+  - ✅ .specify/templates/plan-template.md (no changes needed)
+  - ✅ .specify/templates/spec-template.md (no changes needed)
+  - ✅ .specify/templates/tasks-template.md (no changes needed)
+- Deferred TODOs:
+  - TODO(RATIFICATION_DATE): Confirm original ratification date
+  - TODO(RATIFICATION_DATE): Set ratified date (suggestion: 2026-01-12) without changing version if desired
+-->
+
+# My AI Employee (Hackathon Zero) Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Bronze-First Scope (NON-NEGOTIABLE)
+Build strictly to Bronze tier first.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+- MUST implement only Bronze deliverables initially: Obsidian vault, one watcher, Claude vault I/O, and skills.
+- MUST NOT introduce MCP servers or external actions in Bronze (no email sending, posting, payments).
+- SHOULD allow a `Plans/` folder even though only `Inbox/`, `Needs_Action/`, and `Done/` are required.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Local-First Vault as Source of Truth (NON-NEGOTIABLE)
+Treat the Obsidian vault as the single source of truth.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+- MUST store operational state and artifacts in local markdown inside the vault.
+- MUST keep the required vault structure:
+  - `Inbox/`
+  - `Needs_Action/`
+  - `Done/`
+  - `Dashboard.md`
+  - `Company_Handbook.md`
+- MUST use the repo vault path convention: `My_AI_Employee/AI_Employee_Vault/`.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. Agent Skills for All AI Behavior (NON-NEGOTIABLE)
+Express all AI behavior as Claude Code Agent Skills.
 
-### [PRINCIPLE_6_NAME]
+- MUST implement AI workflows via skills under `.claude/skills/`.
+- MUST be able to run all automation via Claude Code prompts invoking skills.
+- MUST avoid hidden manual steps other than starting the watcher process.
 
+### IV. Vault Safety and Non-Destructive Operations (NON-NEGOTIABLE)
+Prevent accidental data loss in a local-first vault.
 
-[PRINCIPLE__DESCRIPTION]
+- MUST NOT delete user-authored vault content.
+- MUST preserve YAML frontmatter when moving/processing markdown action items.
+- SHOULD prefer append/section updates over full-file rewrites (especially for `Dashboard.md`).
+- MUST ask for clarification when the vault root is ambiguous or when an edit risks overwriting user notes.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### V. Secure Configuration and Secrets Hygiene (NON-NEGOTIABLE)
+Keep credentials out of git and out of the vault.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- MUST NOT commit secrets.
+- MUST store credentials/configuration in `.env` (gitignored) or OS secret stores.
+- SHOULD redact sensitive values from logs and example files.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### VI. Testable, Minimal, Reliable Implementation
+Keep changes small, verifiable, and resilient.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- MUST prefer minimal diffs and avoid unrelated refactors.
+- MUST make the watcher resilient: log errors, continue running, and prevent duplicates (tracked IDs/hashes).
+- SHOULD provide deterministic end-to-end validation steps for Bronze.
+
+## Project Guardrails
+
+### Technology & Tooling
+
+- Python: 3.13+ (or latest available)
+- Package manager: uv
+- Tests: pytest
+- Obsidian: vault of markdown files
+- Claude Code: used as the terminal-based reasoning and write-back engine
+
+### Constraints
+
+- Bronze tier only: no MCP servers and no external actions.
+- Path convention: `My_AI_Employee/AI_Employee_Vault/` is the default vault root.
+
+## Workflow & Quality Gates
+
+- MUST keep the workflow demonstrable end-to-end:
+  - drop file → `Needs_Action` item → Claude processes → plan + dashboard update → item moved to `Done/`
+- MUST add tests for watcher core logic and action-item formatting.
+- SHOULD keep formatting consistent; avoid heavy tooling unless already present in the repo.
+
+### Artifact Conventions (Bronze)
+
+#### Action Item Contract (Needs_Action)
+
+- Action items MUST be Markdown files stored under `Needs_Action/`.
+- Action items SHOULD include YAML frontmatter with (at minimum):
+  - `type`: `email|file_drop|manual`
+  - `received`: ISO timestamp
+  - `status`: `pending|processed`
+  - `priority`: `high|medium|low|auto` (optional)
+  - optional: `source_id`, `from`, `subject`
+
+#### Plan Output Location
+
+- Plans MUST be written to `Plans/` when that folder exists (recommended).
+- If `Plans/` is not used, the chosen plan output location MUST be consistent and documented in the feature spec.
+
+#### Watcher File Handling Default
+
+- Default behavior: the watcher writes a Markdown action item that references the original dropped file path (metadata-only).
+- Copying dropped files into the vault is OPTIONAL and must be an explicit design choice documented in the plan (and ADR if it has long-term impact).
+
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- This constitution supersedes feature specs, plans, and tasks when there is conflict.
+- Amendments MUST update the version and record the rationale.
+- Significant architecture choices with multiple viable options and long-term impact SHOULD be documented with an ADR.
+  - Example: whether the watcher copies dropped files into the vault vs storing metadata-only links.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-01-13 | **Last Amended**: 2026-01-12
