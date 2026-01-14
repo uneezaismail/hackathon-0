@@ -1,0 +1,38 @@
+URGENT: Security Audit Required
+
+Client: SecureBank Financial
+Contact: Michael Chen (m.chen@securebank.com)
+Date Received: January 14, 2026
+
+SECURITY ALERT:
+SecureBank Financial has requested an immediate security audit of their online banking platform following a recent industry-wide vulnerability disclosure. This is a time-sensitive request requiring immediate attention.
+
+SCOPE OF WORK:
+- Comprehensive penetration testing of web application
+- API security assessment
+- Database security review
+- Authentication and authorization audit
+- Third-party integration security review
+- Compliance check (PCI-DSS, SOC 2)
+
+CRITICAL TIMELINE:
+- Security assessment must begin: January 16, 2026
+- Preliminary findings due: January 23, 2026
+- Final report deadline: January 30, 2026
+
+BUDGET:
+Approved budget: $75,000 - $90,000
+Payment terms: 50% upfront, 50% on completion
+
+PRIORITY: CRITICAL
+This is a high-value client with strict regulatory requirements. Immediate response required.
+
+IMMEDIATE ACTIONS NEEDED:
+1. Confirm availability and team capacity
+2. Assemble security audit team (lead auditor + 2 specialists)
+3. Sign NDA and security agreements
+4. Schedule kickoff call with SecureBank's CISO
+5. Prepare audit methodology and tools checklist
+6. Request access credentials and environment details
+
+Please create an immediate action plan for this security audit project.
