@@ -16,8 +16,8 @@ Operate on the Obsidian vault as a **local-first task/memory system**.
 
 Keep this skill narrowly focused on:
 - Reading/writing markdown files in the vault
-- Creating/ensuring the required Bronze-tier folder structure
-- Moving processed items between folders
+- Creating/ensuring the required Bronze and Silver-tier folder structures
+- Moving processed items between folders (including HITL approval pipeline)
 - Updating `Dashboard.md` and `Company_Handbook.md` without clobbering user content
 
 ## Workflow decision tree
@@ -25,7 +25,7 @@ Keep this skill narrowly focused on:
 1. **Need to find the vault root?**
    - Follow “Locate the vault root”.
 2. **Need to ensure folders/files exist?**
-   - Follow “Ensure Bronze vault structure”.
+   - Follow “Ensure vault structure (Bronze & Silver)”.
 3. **Need to update a markdown file safely?**
    - Follow “Safe edit rules”.
 4. **Need to archive/move an item?**
@@ -40,14 +40,25 @@ Determine the vault root using, in order:
 
 If multiple candidates exist, stop and ask for confirmation before writing.
 
-## Ensure Bronze vault structure
+## Ensure vault structure (Bronze & Silver)
 
 Ensure these exist under the vault root (create if missing):
+
+**Bronze Folders:**
 - `Dashboard.md`
 - `Company_Handbook.md`
 - `Inbox/`
 - `Needs_Action/`
 - `Done/`
+
+**Silver Folders (Mandatory):**
+- `Plans/`
+- `Templates/`
+- `Pending_Approval/`
+- `Approved/`
+- `Failed/`
+- `Rejected/`
+- `Logs/` (for systematic JSON audit logging)
 
 Use templates:
 - `templates/DashboardTemplate.md`
@@ -67,9 +78,10 @@ See `references/safety-rules.md` for the exact invariants.
 
 - Never move files outside the vault.
 - Never delete files.
-- When archiving an item from `Needs_Action/` to `Done/`, add minimal processing metadata:
+- Ensure the destination folder exists before moving.
+- When archiving an item from `Needs_Action` or the HITL pipeline (`Pending_Approval`, `Approved`, `Rejected`), add minimal processing metadata:
   - `processed: <ISO_TIMESTAMP>`
-  - `result: planned|triaged|error`
+  - `result: planned|triaged|executed|approved|rejected|error`
   - `related_plan: <path>` if applicable
 
 See `references/vault-conventions.md` for naming conventions.

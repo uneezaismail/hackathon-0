@@ -9,6 +9,8 @@ from pathlib import Path
 from datetime import datetime
 import logging
 import re
+import subprocess
+import json
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +52,17 @@ class DashboardUpdater:
 ## Status Overview
 **Pending Items**: 0
 **Last Updated**: Never
+
+## Silver Tier Status
+**Pending Approvals**: 0
+**Approved (Ready to Execute)**: 0
+**Rejected**: 0
+**Failed**: 0
+
+## Watcher Status
+- Gmail: Not started
+- LinkedIn: Not started
+- WhatsApp: Not started
 
 ## Recent Activity
 No activity yet.
@@ -312,6 +325,103 @@ No warnings.
             'dashboard_path': str(self.dashboard_path)
         }
 
+    def get_pm2_watcher_statuses(self) -> dict:
+        """
+        Query PM2 for watcher process statuses.
+
+        Returns:
+            Dictionary mapping watcher types to their PM2 status information.
+            Returns empty dict if PM2 is not available or no watchers are running.
+        """
+        watcher_statuses = {}
+
+        try:
+            # Run pm2 jlist to get JSON output of all processes
+            pm2_output = subprocess.run(
+                ['pm2', 'jlist'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if pm2_output.returncode != 0:
+                logger.debug("PM2 not available or returned error")
+                return watcher_statuses
+
+            pm2_processes = json.loads(pm2_output.stdout)
+
+            # Map PM2 process names to watcher types
+            pm2_name_map = {
+                'gmail-watcher': 'gmail',
+                'whatsapp-watcher': 'whatsapp',
+                'linkedin-watcher': 'linkedin',
+                'filesystem-watcher': 'filesystem',
+                'orchestrator': 'orchestrator'
+            }
+
+            for process in pm2_processes:
+                pm2_name = process.get('name', '')
+                watcher_type = pm2_name_map.get(pm2_name)
+
+                if watcher_type:
+                    # Get PM2 metadata
+                    pm2_env = process.get('pm2_env', {})
+                    monit = process.get('monit', {})
+
+                    status = pm2_env.get('status', 'unknown')
+                    restart_count = pm2_env.get('restart_time', 0)
+                    uptime_ms = monit.get('uptime', 0)
+                    uptime_seconds = uptime_ms // 1000 if uptime_ms else 0
+
+                    # Format uptime display
+                    if uptime_seconds < 60:
+                        uptime_display = f"{uptime_seconds}s"
+                    elif uptime_seconds < 3600:
+                        uptime_display = f"{uptime_seconds // 60}m"
+                    elif uptime_seconds < 86400:
+                        hours = uptime_seconds // 3600
+                        minutes = (uptime_seconds % 3600) // 60
+                        uptime_display = f"{hours}h {minutes}m"
+                    else:
+                        days = uptime_seconds // 86400
+                        hours = (uptime_seconds % 86400) // 3600
+                        uptime_display = f"{days}d {hours}h"
+
+                    # Determine stability label based on restart count
+                    if restart_count == 0:
+                        stability_label = "Stable"
+                    elif restart_count <= 2:
+                        stability_label = "Good"
+                    elif restart_count <= 5:
+                        stability_label = "Fair"
+                    else:
+                        stability_label = "Unstable"
+
+                    watcher_statuses[watcher_type] = {
+                        'status': 'running' if status == 'online' else 'stopped',
+                        'pm2_status': status,
+                        'restart_count': restart_count,
+                        'uptime_seconds': uptime_seconds,
+                        'uptime_display': uptime_display,
+                        'stability_label': stability_label,
+                        'pm2_id': process.get('pm_id', ''),
+                        'memory_mb': monit.get('memory', 0) // (1024 * 1024),
+                        'cpu_percent': monit.get('cpu', 0)
+                    }
+
+        except subprocess.TimeoutExpired:
+            logger.warning("PM2 query timed out")
+        except subprocess.SubprocessError as e:
+            logger.debug(f"PM2 subprocess error: {e}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse PM2 JSON output: {e}")
+        except FileNotFoundError:
+            logger.debug("PM2 command not found (not installed or not in PATH)")
+        except Exception as e:
+            logger.error(f"Unexpected error querying PM2: {e}")
+
+        return watcher_statuses
+
 
 def update_dashboard_after_triage(
     vault_path: str | Path,
@@ -352,3 +462,130 @@ def update_dashboard_after_triage(
         updater.update_system_health("operational")
 
     logger.info("Dashboard updated after triage")
+
+
+def update_silver_tier_status(
+    vault_path: str | Path,
+    pending_approvals: int = None,
+    approved_count: int = None,
+    rejected_count: int = None,
+    failed_count: int = None
+) -> None:
+    """
+    Update Silver tier approval workflow status.
+
+    Args:
+        vault_path: Path to the Obsidian vault root
+        pending_approvals: Count of items in Pending_Approval folder
+        approved_count: Count of items in Approved folder
+        rejected_count: Count of items in Rejected folder
+        failed_count: Count of items in Failed folder
+    """
+    updater = DashboardUpdater(vault_path)
+    content = updater._read_dashboard()
+
+    # Build status content
+    status_lines = []
+    if pending_approvals is not None:
+        status_lines.append(f"**Pending Approvals**: {pending_approvals}")
+    if approved_count is not None:
+        status_lines.append(f"**Approved (Ready to Execute)**: {approved_count}")
+    if rejected_count is not None:
+        status_lines.append(f"**Rejected**: {rejected_count}")
+    if failed_count is not None:
+        status_lines.append(f"**Failed**: {failed_count}")
+
+    if status_lines:
+        status_content = '\n'.join(status_lines)
+        updated_content = updater._update_section(content, "Silver Tier Status", status_content)
+        updater._write_dashboard(updated_content)
+        logger.info("Updated Silver tier status")
+
+
+def update_watcher_status(
+    vault_path: str | Path,
+    gmail_status: str = None,
+    linkedin_status: str = None,
+    whatsapp_status: str = None,
+    use_pm2: bool = True
+) -> None:
+    """
+    Update watcher status in dashboard.
+
+    If no statuses are provided and use_pm2=True, automatically queries PM2
+    for real-time watcher status.
+
+    Args:
+        vault_path: Path to the Obsidian vault root
+        gmail_status: Gmail watcher status (running, stopped, error)
+        linkedin_status: LinkedIn watcher status (running, stopped, error)
+        whatsapp_status: WhatsApp watcher status (running, stopped, error)
+        use_pm2: If True and no statuses provided, query PM2 for status
+    """
+    updater = DashboardUpdater(vault_path)
+    content = updater._read_dashboard()
+
+    # If no statuses provided and use_pm2 is True, query PM2
+    if use_pm2 and all(s is None for s in [gmail_status, linkedin_status, whatsapp_status]):
+        pm2_statuses = updater.get_pm2_watcher_statuses()
+
+        if pm2_statuses:
+            # Use PM2 data
+            gmail_status = pm2_statuses.get('gmail', {}).get('status', 'not_started')
+            linkedin_status = pm2_statuses.get('linkedin', {}).get('status', 'not_started')
+            whatsapp_status = pm2_statuses.get('whatsapp', {}).get('status', 'not_started')
+
+            # Build enhanced status with PM2 metadata
+            status_lines = []
+            for watcher_type, watcher_name in [('gmail', 'Gmail'), ('linkedin', 'LinkedIn'), ('whatsapp', 'WhatsApp')]:
+                if watcher_type in pm2_statuses:
+                    data = pm2_statuses[watcher_type]
+                    status = data['status']
+                    uptime = data['uptime_display']
+                    stability = data['stability_label']
+                    restart_count = data['restart_count']
+
+                    # Map status to emoji
+                    emoji = '✅' if status == 'running' else '⏸️' if status == 'stopped' else '❌'
+
+                    # Build status line with metadata
+                    status_line = f"- {watcher_name}: {emoji} {status.title()}"
+                    if status == 'running':
+                        status_line += f" (Uptime: {uptime}, Restarts: {restart_count}, {stability})"
+
+                    status_lines.append(status_line)
+                else:
+                    status_lines.append(f"- {watcher_name}: ⚪ Not started")
+
+            if status_lines:
+                watcher_content = '\n'.join(status_lines)
+                updated_content = updater._update_section(content, "Watcher Status", watcher_content)
+                updater._write_dashboard(updated_content)
+                logger.info("Updated watcher status from PM2")
+                return
+
+    # Fallback to manual status (original behavior)
+    status_emoji = {
+        'running': '✅',
+        'stopped': '⏸️',
+        'error': '❌',
+        'not_started': '⚪'
+    }
+
+    # Build watcher status content
+    status_lines = []
+    if gmail_status is not None:
+        emoji = status_emoji.get(gmail_status.lower(), '❓')
+        status_lines.append(f"- Gmail: {emoji} {gmail_status.title()}")
+    if linkedin_status is not None:
+        emoji = status_emoji.get(linkedin_status.lower(), '❓')
+        status_lines.append(f"- LinkedIn: {emoji} {linkedin_status.title()}")
+    if whatsapp_status is not None:
+        emoji = status_emoji.get(whatsapp_status.lower(), '❓')
+        status_lines.append(f"- WhatsApp: {emoji} {whatsapp_status.title()}")
+
+    if status_lines:
+        watcher_content = '\n'.join(status_lines)
+        updated_content = updater._update_section(content, "Watcher Status", watcher_content)
+        updater._write_dashboard(updated_content)
+        logger.info("Updated watcher status")

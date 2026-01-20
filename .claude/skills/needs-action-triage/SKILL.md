@@ -17,15 +17,21 @@ description: >
 
 Convert watcher-created inputs into clear next steps **inside the vault**.
 
-Bronze tier scope:
+**Bronze Tier Scope:**
 - Read items in `Needs_Action/`
 - Read rules from `Company_Handbook.md`
-- Write plans/drafts back into the vault
+- Write plans/drafts back into the vault (`Plans/`)
 - Update `Dashboard.md`
 - Move processed inputs to `Done/`
 - Do **not** perform external actions
 
-## Workflow (Bronze)
+**Silver Tier Scope (Expanded):**
+- **Decision Layer**: Determine if the plan requires external actions (emails, posts, etc.).
+- **HITL Routing**: Move items to `Pending_Approval/` if they require human sign-off.
+- **Audit Logging**: Ensure actions are logged to `/Logs/` via the `@audit-logger` skill.
+- **MCP Integration**: Create drafts that can be picked up by the `@mcp-executor`.
+
+## Workflow (Bronze & Silver)
 
 1. Locate vault root using `@obsidian-vault-ops` workflow.
 2. Scan `Needs_Action/` for pending items.
@@ -33,18 +39,26 @@ Bronze tier scope:
    - Read file and parse minimal frontmatter (type/received/status/priority).
    - Read `Company_Handbook.md` and apply processing + priority rules.
    - Produce a plan using `templates/PlanTemplate.md`.
-   - If the item is missing required info, include a “Questions” section in the plan.
+   - **Decision Step (Silver)**:
+     - If the plan requires an external action (Section 6.4 of Handbook), mark it as `requires_approval: true`.
+     - Generate the approval request file in `Pending_Approval/` using `@approval-workflow-manager`.
+   - If the item is missing required info, include a "Questions" section in the plan.
 4. Update `Dashboard.md`:
    - Update counts and append a short recent-activity line per processed item.
 5. Archive processed input:
-   - Move the action item to `Done/` folder
+   - **Bronze Tier (no external action)**: Move to `Done/` folder with `status: completed`
+   - **Silver Tier (external action required)**:
+     - KEEP in `Needs_Action/` folder (do NOT move to Done yet!)
+     - Update metadata: `status: pending_approval`, `result: pending_approval`
+     - Add `related_plan` and `related_approval` references
+     - The file will be moved to `Done/` by `@mcp-executor` AFTER the external action completes
    - Add `processed` metadata to frontmatter:
      - `processed: [ISO timestamp]`
-     - `result: planned`
+     - `result: planned` (Bronze) or `pending_approval` (Silver)
      - `related_plan: Plans/[plan-filename].md`
-     - `status: completed` (change from pending)
-   - Mark all checkboxes in "Next Steps" section as completed `[x]`
-   - Remove the original from `Needs_Action/`
+     - `related_approval: Pending_Approval/[approval-filename].md` (Silver only)
+     - `status: completed` (Bronze) or `pending_approval` (Silver)
+   - Mark all checkboxes in "Next Steps" section as completed `[x]` ONLY if no external action remains (Bronze only).
 
 ## Output rules
 
