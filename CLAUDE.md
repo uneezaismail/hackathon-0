@@ -212,6 +212,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 ## Active Technologies
 - Python 3.13+ + `watchdog`, `python-frontmatter` (plus existing repo deps) (001-bronze-ai-employee)
 - Local files (Obsidian vault + a local non-vault state file for dedupe) (001-bronze-ai-employee)
+- Python 3.13+ + FastMCP (MCP server framework with Pydantic v2), Playwright (browser automation), google-api-python-client (Gmail API), google-auth-oauthlib (OAuth 2.0), watchdog (filesystem monitoring, already in Bronze), python-frontmatter (YAML parsing, already in Bronze) (002-silver-ai-employee)
+- Obsidian vault (local markdown files), JSONL audit logs (/Logs/YYYY-MM-DD.json), local queue files for offline resilience (002-silver-ai-employee)
 
 ## Recent Changes
 - 001-bronze-ai-employee: Added Python 3.13+ + `watchdog`, `python-frontmatter` (plus existing repo deps)

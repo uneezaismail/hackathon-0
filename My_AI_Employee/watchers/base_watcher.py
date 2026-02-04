@@ -4,6 +4,7 @@ Base watcher abstract class for all watcher implementations.
 Provides common functionality for file system monitoring using watchdog.
 """
 
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional
@@ -120,3 +121,39 @@ class BaseWatcher(FileSystemEventHandler, ABC):
                 return False
 
         return True
+
+    def run(self) -> None:
+        """
+        Main polling loop for the watcher.
+
+        Continuously checks for updates and creates action files.
+        This method runs indefinitely until interrupted.
+        """
+        self.logger.info(f'Starting {self.__class__.__name__}')
+        self.logger.info(f'Vault: {self.vault_path}')
+        self.logger.info(f'Check interval: {self.check_interval}s')
+
+        while True:
+            try:
+                self.logger.info('Checking for new items...')
+                items = self.check_for_updates()
+
+                if items:
+                    self.logger.info(f'Found {len(items)} new items')
+                    for item in items:
+                        try:
+                            result = self.create_action_file(item)
+                            if result:
+                                self.logger.info(f'Created action file: {result.name}')
+                        except Exception as e:
+                            self.logger.error(f'Error creating action file: {e}')
+                else:
+                    self.logger.info('Found 0 new items')
+
+            except KeyboardInterrupt:
+                self.logger.info('Watcher stopped by user')
+                break
+            except Exception as e:
+                self.logger.error(f'Error in watcher loop: {e}')
+
+            time.sleep(self.check_interval)

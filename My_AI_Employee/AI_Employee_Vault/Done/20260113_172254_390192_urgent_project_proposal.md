@@ -21,7 +21,7 @@ type: file_drop
 New file detected in watch folder. Review and determine appropriate action.
 
 ## Next Steps
-- [ ] Review file contents
-- [ ] Determine priority and category
-- [ ] Create plan if needed
-- [ ] Archive to Done when complete
+- [x] Review file contents
+- [x] Determine priority and category
+- [x] Create plan if needed
+- [x] Archive to Done when complete
