@@ -28,6 +28,8 @@ import argparse
 import logging
 import sys
 import os
+import time
+import multiprocessing
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -120,7 +122,7 @@ def load_config(args: argparse.Namespace) -> dict:
     config = {
         'watcher': args.watcher.lower(),
         'vault_path': args.vault_path or os.getenv('VAULT_ROOT', 'AI_Employee_Vault'),
-        'watch_folder': args.watch_folder or os.getenv('WATCH_FOLDER', 'test_watch_folder'),
+        'watch_folder': args.watch_folder or os.getenv('WATCH_FOLDER', 'AI_Employee_Vault/Inbox'),
         'watch_mode': args.watch_mode or os.getenv('WATCH_MODE', 'events'),
         'check_interval': args.check_interval or int(os.getenv('WATCHER_CHECK_INTERVAL', '60')),
         'log_level': args.log_level or os.getenv('LOG_LEVEL', 'INFO')
@@ -238,6 +240,48 @@ def run_whatsapp_watcher(config: dict) -> int:
     return 0
 
 
+def run_watcher_process(watcher_name: str, config: dict):
+    """Run a single watcher in a separate process."""
+    logger = logging.getLogger(f"Watcher-{watcher_name}")
+
+    try:
+        if watcher_name == 'filesystem':
+            from watchers.filesystem_watcher import FilesystemWatcher
+            watcher = FilesystemWatcher(
+                vault_path=str(config['vault_path']),
+                watch_folder=str(config['watch_folder']),
+                watch_mode=config['watch_mode'],
+                check_interval=config['check_interval']
+            )
+        elif watcher_name == 'gmail':
+            from watchers.gmail_watcher import GmailWatcher
+            watcher = GmailWatcher(
+                vault_path=str(config['vault_path']),
+                check_interval=config['check_interval']
+            )
+        elif watcher_name == 'linkedin':
+            from watchers.linkedin_watcher import LinkedInWatcher
+            watcher = LinkedInWatcher(
+                vault_path=str(config['vault_path']),
+                check_interval=config['check_interval']
+            )
+        elif watcher_name == 'whatsapp':
+            from watchers.whatsapp_watcher import WhatsAppWatcher
+            watcher = WhatsAppWatcher(
+                vault_path=str(config['vault_path']),
+                check_interval=config['check_interval']
+            )
+        else:
+            logger.error(f"Unknown watcher: {watcher_name}")
+            return
+
+        logger.info(f"Starting {watcher_name} watcher...")
+        watcher.run()
+
+    except Exception as e:
+        logger.error(f"Error in {watcher_name} watcher: {e}", exc_info=True)
+
+
 def run_all_watchers(config: dict) -> int:
     """Run all watchers with orchestration (Silver tier)."""
     logger = logging.getLogger(__name__)
@@ -249,12 +293,80 @@ def run_all_watchers(config: dict) -> int:
     logger.info(f"Health check interval: {config['check_interval']}s")
     logger.info("=" * 60)
 
-    # Import and run orchestrator
-    from orchestrate_watchers import MultiWatcherOrchestrator
+    # List of watchers to run
+    watchers = ['filesystem', 'gmail', 'linkedin', 'whatsapp']
+    processes = {}
 
-    orchestrator = MultiWatcherOrchestrator()
-    orchestrator.start()
-    return 0
+    try:
+        # Start each watcher in a separate process
+        for watcher_name in watchers:
+            logger.info(f"Starting {watcher_name} watcher process...")
+            process = multiprocessing.Process(
+                target=run_watcher_process,
+                args=(watcher_name, config),
+                name=f"Watcher-{watcher_name}"
+            )
+            process.start()
+            processes[watcher_name] = process
+            logger.info(f"✅ {watcher_name} watcher started (PID: {process.pid})")
+
+        logger.info("")
+        logger.info("=" * 60)
+        logger.info("All watchers started successfully!")
+        logger.info("=" * 60)
+        logger.info("")
+        logger.info("Running watchers:")
+        for name, proc in processes.items():
+            logger.info(f"  - {name}: PID {proc.pid}")
+        logger.info("")
+        logger.info("Press Ctrl+C to stop all watchers")
+        logger.info("=" * 60)
+
+        # Monitor processes and keep running
+        while True:
+            time.sleep(config['check_interval'])
+
+            # Check if any process has died
+            for name, proc in processes.items():
+                if not proc.is_alive():
+                    logger.warning(f"⚠️  {name} watcher died! Restarting...")
+                    new_process = multiprocessing.Process(
+                        target=run_watcher_process,
+                        args=(name, config),
+                        name=f"Watcher-{name}"
+                    )
+                    new_process.start()
+                    processes[name] = new_process
+                    logger.info(f"✅ {name} watcher restarted (PID: {new_process.pid})")
+
+    except KeyboardInterrupt:
+        logger.info("")
+        logger.info("Shutdown requested - stopping all watchers...")
+
+        # Terminate all processes
+        for name, proc in processes.items():
+            if proc.is_alive():
+                logger.info(f"Stopping {name} watcher...")
+                proc.terminate()
+                proc.join(timeout=5)
+                if proc.is_alive():
+                    logger.warning(f"Force killing {name} watcher...")
+                    proc.kill()
+                    proc.join()
+
+        logger.info("All watchers stopped")
+        return 0
+
+    except Exception as e:
+        logger.error(f"Error in orchestrator: {e}", exc_info=True)
+
+        # Cleanup on error
+        for name, proc in processes.items():
+            if proc.is_alive():
+                proc.terminate()
+                proc.join(timeout=5)
+
+        return 1
 
 
 def main() -> int:

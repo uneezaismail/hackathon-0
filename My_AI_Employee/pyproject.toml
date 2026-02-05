@@ -1,7 +1,7 @@
 [project]
 name = "my-ai-employee"
-version = "0.2.0"
-description = "Silver Tier AI Employee - Multi-channel monitoring with HITL approval workflow"
+version = "0.3.0"
+description = "Gold Tier AI Employee - Autonomous operation with business intelligence"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -16,6 +16,16 @@ dependencies = [
     "google-api-python-client>=2.100.0",
     "google-auth-oauthlib>=1.1.0",
     "google-auth-httplib2>=0.1.1",
+    # Gold Tier dependencies
+    "odoorpc>=0.9.0",
+    "facebook-sdk>=3.1.0",
+    "tweepy>=4.14.0",
+    "psutil>=5.9.0",
+    # Required utilities
+    "keyring>=24.3.0",        # Secure credential storage (used in utils/credentials.py)
+    "pyyaml>=6.0.1",          # YAML parsing (required by python-frontmatter)
+    "python-dateutil>=2.8.2", # Better date parsing for CEO briefing
+    "schedule>=1.2.0",        # Job scheduling for weekly CEO briefing
 ]
 
 [build-system]

@@ -193,9 +193,9 @@ Use the /needs-action-triage skill to:
 The file has been detected by a watcher and needs processing."""
 
         try:
-            # Call Claude Code via subprocess
+            # Call Claude Code via subprocess (using ccr code command)
             result = subprocess.run(
-                ['claude', '-p', prompt],
+                ['ccr', 'code', '-p', prompt],
                 capture_output=True,
                 text=True,
                 timeout=120
@@ -234,22 +234,27 @@ Steps:
 1. Read the file to understand the action
 2. Use the appropriate MCP tool to execute:
    - For email: Use email_mcp send_email tool
-   - For LinkedIn: Use linkedin_mcp tool
-   - For browser: Use browser_mcp tool
+   - For LinkedIn: Use linkedin-web-mcp post_to_linkedin tool (FREE browser automation, supports images)
+   - For WhatsApp: Use browser_mcp send_whatsapp_message tool
+   - For Odoo (Gold Tier): Use odoo_mcp tools (create_invoice, send_invoice, record_payment, create_expense, generate_report)
+   - For Facebook (Gold Tier): Use facebook-web-mcp post_to_facebook tool
+   - For Instagram (Gold Tier): Use instagram-web-mcp post_to_instagram tool
+   - For Twitter (Gold Tier): Use twitter-web-mcp post_tweet tool
 3. Capture the result
 4. Create execution record in Done/ with results
 5. **IMPORTANT**: Read the 'original_file' field from the approval's frontmatter
 6. **IMPORTANT**: Move the original file from Needs_Action/ to Done/ with execution metadata
 7. Update Dashboard.md
+8. Log action to audit log with credential sanitization
 
 The action has been approved and should be executed now.
 
 CRITICAL: After successful execution, you MUST move the original action item file from Needs_Action/ to Done/. The original file path is specified in the approval's 'original_file' field."""
 
         try:
-            # Call Claude Code via subprocess
+            # Call Claude Code via subprocess (using ccr code command)
             result = subprocess.run(
-                ['claude', '-p', prompt],
+                ['ccr', 'code', '-p', prompt],
                 capture_output=True,
                 text=True,
                 timeout=180

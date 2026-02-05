@@ -1,14 +1,15 @@
 ---
 name: mcp-executor
 description: >
-  Execute approved actions via custom FastMCP servers (email, LinkedIn, browser automation).
-  Processes items from /Approved/ folder in Obsidian vault, routes to appropriate MCP server,
-  executes action with error handling, and logs results to /Done/. Supports email sending,
-  LinkedIn posting, form filling, file operations, and external API calls. Use when: (1) Executing
-  approved email/message actions, (2) Posting to LinkedIn or social media, (3) Performing browser
-  automation (payments, forms, clicks), (4) Calling external APIs, (5) Any action requiring
-  real-world execution. Trigger phrases: "execute approved action", "send email", "post to LinkedIn",
-  "fill out form", "make API call", "run action".
+  Execute approved actions via custom FastMCP servers (email, LinkedIn, browser automation, Odoo,
+  social media). Processes items from /Approved/ folder in Obsidian vault, routes to appropriate
+  MCP server, executes action with error handling, and logs results to /Done/. Supports email sending,
+  LinkedIn posting, Facebook/Instagram/Twitter posting, Odoo accounting operations, form filling,
+  file operations, and external API calls. Use when: (1) Executing approved email/message actions,
+  (2) Posting to LinkedIn or social media, (3) Performing browser automation (payments, forms, clicks),
+  (4) Executing Odoo accounting operations (invoices, payments), (5) Calling external APIs, (6) Any
+  action requiring real-world execution. Trigger phrases: "execute approved action", "send email",
+  "post to social media", "send invoice", "record payment", "fill out form", "make API call", "run action".
 ---
 
 # MCP Executor (Action Execution Engine)
@@ -103,7 +104,7 @@ Action executes successfully? YES → Create execution record in /Done/
 
 ## Built-In MCP Servers
 
-### 1. Email MCP Server
+### 1. Email MCP Server (Silver Tier)
 
 **Capabilities**: Send emails, draft emails, search mailbox
 
@@ -117,7 +118,7 @@ python mcp_servers/email_mcp.py
 - `draft_email` - Create draft without sending
 - `search_mail` - Search existing emails
 
-### 2. LinkedIn MCP Server
+### 2. LinkedIn MCP Server (Silver Tier)
 
 **Capabilities**: Post content, share updates, create posts
 
@@ -131,7 +132,7 @@ python mcp_servers/linkedin_mcp.py
 - `share_link` - Share URL with comment
 - `schedule_post` - Schedule post for later
 
-### 3. Browser Automation MCP Server
+### 3. Browser Automation MCP Server (Silver Tier)
 
 **Capabilities**: Navigate browser, fill forms, click buttons, extract data
 
@@ -146,6 +147,67 @@ python mcp_servers/browser_mcp.py
 - `click_button` - Click element
 - `extract_text` - Get page content
 - `take_screenshot` - Capture page
+
+### 4. Odoo MCP Server (Gold Tier)
+
+**Capabilities**: Invoice management, payment tracking, expense categorization, financial reporting
+
+```bash
+# Start Odoo server
+python mcp_servers/odoo_mcp.py
+```
+
+**Actions**:
+- `create_invoice` - Create draft invoice in Odoo
+- `send_invoice` - Send invoice to customer via email
+- `record_payment` - Record customer/vendor payment
+- `create_expense` - Create expense record
+- `generate_report` - Generate financial reports (P&L, Balance Sheet, Cash Flow)
+
+### 5. Facebook MCP Server (Gold Tier)
+
+**Capabilities**: Post to Facebook Page, upload photos/videos, get engagement metrics
+
+```bash
+# Start Facebook server
+python mcp_servers/facebook_mcp.py
+```
+
+**Actions**:
+- `create_post` - Post text to Facebook Page
+- `upload_photo` - Post photo with caption
+- `upload_video` - Post video with caption
+- `get_post_insights` - Get engagement metrics
+
+### 6. Instagram MCP Server (Gold Tier)
+
+**Capabilities**: Post photos/videos, create stories/reels, get engagement metrics
+
+```bash
+# Start Instagram server
+python mcp_servers/instagram_mcp.py
+```
+
+**Actions**:
+- `create_media_post` - Post photo/video to Instagram
+- `create_story` - Post to Instagram story
+- `create_reel` - Post Instagram reel
+- `get_media_insights` - Get engagement metrics
+
+### 7. Twitter MCP Server (Gold Tier)
+
+**Capabilities**: Post tweets, upload media, create threads, get engagement metrics
+
+```bash
+# Start Twitter server
+python mcp_servers/twitter_mcp.py
+```
+
+**Actions**:
+- `create_tweet` - Post single tweet
+- `create_thread` - Post tweet thread
+- `upload_media` - Upload photo/video/GIF
+- `get_tweet_metrics` - Get engagement metrics
 
 ## Approved Action Format
 

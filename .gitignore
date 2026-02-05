@@ -59,6 +59,7 @@ watcher_state.json
 .env.local
 .env.whatsapp
 .mcp.json
+.watchdog_state.json*
 
 # Logs
 *.log
@@ -96,6 +97,16 @@ My_AI_Employee/AI_Employee_Vault/Needs_Action/*.md
 My_AI_Employee/AI_Employee_Vault/Pending_Approval/*.md
 My_AI_Employee/AI_Employee_Vault/Approved/*.md
 My_AI_Employee/AI_Employee_Vault/Rejected/*.md
+My_AI_Employee/AI_Employee_Vault/Briefings/*.md
+
+# Gold Tier - Ralph Wiggum Loop state
+.ralph_state.json
+
+# Gold Tier - Offline operation queues
+.odoo_queue.jsonl
+.facebook_queue.jsonl
+.instagram_queue.jsonl
+.twitter_queue.jsonl
 
 # Test watch folder content
 My_AI_Employee/test_watch_folder/*.txt
@@ -104,3 +115,4 @@ My_AI_Employee/test_watch_folder/*.pdf
 
 # old-code
 *old_files
+gold_summaries

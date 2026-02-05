@@ -1,13 +1,15 @@
 ---
 name: approval-workflow-manager
 description: >
-  Human-in-the-loop approval workflow for AI Employee actions. Detects external/sensitive actions
-  from watchers and action item processing, routes them for human approval via Obsidian vault
-  (/Pending_Approval folder), handles approvals/rejections, and manages execution state.
-  Use when: (1) Processing new action items that require approval, (2) Updating approval request status,
+  Human-in-the-loop approval workflow for AI Employee actions including financial operations. Detects
+  external/sensitive actions from watchers and action item processing, routes them for human approval
+  via Obsidian vault (/Pending_Approval folder), handles approvals/rejections, and manages execution
+  state. Supports email, social media, Odoo accounting operations, and browser automation. Use when:
+  (1) Processing new action items that require approval, (2) Updating approval request status,
   (3) Archiving approved/rejected decisions, (4) Checking pending approvals, (5) Configuring approval
-  rules in Company_Handbook.md. Trigger phrases: "request approval", "pending approval", "approve action",
-  "reject action", "check what needs approval", "approval workflow", "HITL approval".
+  rules in Company_Handbook.md, (6) Handling financial approval thresholds. Trigger phrases: "request
+  approval", "pending approval", "approve action", "reject action", "check what needs approval",
+  "approval workflow", "HITL approval", "approve invoice", "approve payment", "approve social post".
 ---
 
 # Approval Workflow Manager (Human-in-the-Loop)
