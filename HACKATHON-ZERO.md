@@ -5,21 +5,31 @@
 **Tagline:** _Your life and business on autopilot. Local-first, agent-driven, human-in-the-loop._
 
 This document serves as a comprehensive architectural blueprint and hackathon guide for
+
 building a "Digital FTE" (Full-Time Equivalent). It proposes a futuristic, local-first approach to
+
 automation where an AI agent—powered by Claude Code and Obsidian—proactively manages
+
 personal and business affairs 24/7. You can also think of it as a "Smart Consultant" (General
+
 Agents). The focus is on high-level reasoning, autonomy, and flexibility. Think of it as hiring a
+
 senior employee who figures out how to solve the problems.
 
 This hackathon takes the concept of a "Personal AI Employee" to its logical extreme. It doesn't
+
 just wait for you to type; it proactively manages your "Personal Affairs" (Gmail, WhatsApp,
+
 Bank) and your "Business" (Social Media, Payments, Project Tasks) using **Claude Code** as the
+
 executor and **Obsidian** as the management dashboard.
 
 All our faculty members and students will build this Personal AI Employee using Claude Code.
 
 **Standout Idea:** The "Monday Morning CEO Briefing," where the AI autonomously audits bank
+
 transactions and tasks to report revenue and bottlenecks, transforms the AI from a chatbot
+
 into a proactive business partner.
 
 **Architecture & Tech Stack:**
@@ -27,7 +37,8 @@ into a proactive business partner.
 The proposed stack is robust, privacy-focused, and clever:
 
 ```
-● The Brain: Claude Code acts as the reasoning engine.
+● The Brain: Claude Code acts as the reasoning engine. We add the Ralph Wiggum Stop
+hook to let the agent continuously iterate until the assigned task is complete.
 ● The Memory/GUI: Obsidian (local Markdown) is used as the dashboard, keeping data
 local and accessible.
 ● The Senses (Watchers): Lightweight Python scripts monitor Gmail, WhatsApp, and
@@ -36,15 +47,22 @@ filesystems to trigger the AI.
 sending emails or clicking buttons.
 ```
 This architecture solves the "lazy agent" problem by using "Watchers" to wake the agent up
-rather than waiting for user input.
+
+rather than waiting for user input and "Ralph Wiggum" (a Stop hook pattern) to keep it
+
+working until done.
 
 This is an exceptional technical hackathon project. It moves beyond "prompt engineering" into
+
 "agent engineering." It provides a complete, viable path to building a functional autonomous
+
 agent using tools available in 2026 (or today).
 
 
 **Research and Show Case Meeting Every Wednesday:**
+
 We will be holding a Research Meeting every Wednesday at 10:00 pm on Zoom all of you are
+
 welcome to join, the first meeting will be held on Wednesday, Jan 7th, 2026:
 
 https://us06web.zoom.us/j/87188707642?pwd=a9XloCsinvn1JzICbPc2YGUvWTbOTr.
@@ -58,6 +76,7 @@ If the Zoom meeting is full, you may watch live or recording at:
 https://www.youtube.com/@panaversity
 
 In these meetings we will be teaching each other how to build and enhance our first AI
+
 Employee.
 
 ##### Digital FTE: The New Unit of Value
@@ -186,17 +205,58 @@ Estimated time: 40+ hours
 
 1. All Silver requirements plus:
 2. Full cross-domain integration (Personal + Business)
-3. Create accounting system for your business in Xero ( https://www.xero.com/ ) and
-    integrate it with its MCP Server ( https://github.com/XeroAPI/xero-mcp-server )
+3. Create an accounting system for your business in Odoo Community (self-hosted, local)
+    and integrate it via an MCP server using Odoo’s JSON-RPC APIs (Odoo 19+).
 4. Integrate Facebook and Instagram and post messages and generate summary
 5. Integrate Twitter (X) and post messages and generate summary
 6. Multiple MCP servers for different action types
 7. Weekly Business and Accounting Audit with CEO Briefing generation
 8. Error recovery and graceful degradation
 9. Comprehensive audit logging
-10. Documentation of your architecture and lessons learned
-11. All AI functionality should be implemented as Agent Skills
+10. Ralph Wiggum loop for autonomous multi-step task completion (see Section 2D)
 
+
+11. Documentation of your architecture and lessons learned
+12. All AI functionality should be implemented as Agent Skills
+
+##### Platinum Tier: Always-On Cloud + Local Executive (Production-ish AI
+
+##### Employee)
+
+Estimated time: 60+ hours
+All Gold requirements plus:
+
+1. **Run the AI Employee on Cloud 24/7** (always-on watchers + orchestrator + health
+    monitoring). You can deploy a Cloud VM (Oracle/AWS/etc.) - Oracle Cloud Free VMs
+    can be used for this (subject to limits/availability).
+2. **Work-Zone Specialization (domain ownership)** :
+    a. **Cloud owns:** Email triage + draft replies + social post drafts/scheduling
+       (draft-only; requires Local approval before send/post)
+    b. **Local owns:** approvals, WhatsApp session, payments/banking, and final
+       “send/post” actions
+3. Delegation via Synced Vault (Phase 1)
+    a. Agents communicate by **writing files** into:
+       i. /Needs_Action/<domain>/, /Plans/<domain>/,
+          /Pending_Approval/<domain>/
+    b. Prevent double-work using:
+       i. /In_Progress/<agent>/ claim-by-move rule
+ii. single-writer rule for Dashboard.md (Local)
+iii. Cloud writes updates to /Updates/ (or /Signals/), and Local merges them
+into Dashboard.md.
+    c. For Vault sync (Phase 1) use Git (recommended) or Syncthing.
+    d. **Claim-by-move rule:** first agent to move an item from /Needs_Action to
+       /In_Progress/<agent>/ owns it; other agents must ignore it.
+4. **Security rule:** Vault sync includes only markdown/state. Secrets never sync (.env,
+    tokens, WhatsApp sessions, banking creds). So Cloud never stores or uses WhatsApp
+    sessions, banking credentials, or payment tokens.
+5. **Deploy Odoo Community on a Cloud VM (24/7)** with HTTPS, backups, and health
+    monitoring; integrate Cloud Agent with Odoo via MCP for draft-only accounting actions
+    and Local approval for posting invoices/payments.
+6. Optional A2A Upgrade (Phase 2): Replace some file handoffs with direct A2A messages
+    later, while keeping the vault as the audit record
+7. **Platinum demo (minimum passing gate):** Email arrives while Local is offline → Cloud
+    drafts reply + writes approval file → when Local returns, user approves → Local
+    executes send via MCP → logs → moves task to /Done.
 
 #### 1. The "Foundational Layer" (Local Engine)
 
@@ -204,18 +264,23 @@ Estimated time: 40+ hours
 ● The Nerve Center (Obsidian): Acts as the GUI (Graphical User Interface) and
 Long-Term Memory.
 ○ Dashboard.md: Real-time summary of bank balance, pending messages, and active
+```
+
+```
 business projects.
 ○ Company_Handbook.md: Contains your "Rules of Engagement" (e.g., "Always be
 polite on WhatsApp," "Flag any payment over $500 for my approval").
 ● The Muscle (Claude Code): Runs in your terminal, pointed at your Obsidian vault. It uses
-its File System tools to read your tasks and write reports.
+its File System tools to read your tasks and write reports. The Ralph Wiggum loop (a
+Stop hook) keeps Claude iterating until multi-step tasks are complete.
 ```
 #### 2. Architecture: Perception → Reasoning → Action
 
 ###### A. Perception (The "Watchers")
 
-Since Claude Code can't "listen" to the internet 24/7, you use lightweight **Python Sentinel
-Scripts** running in the background:
+Since Claude Code can't "listen" to the internet 24/7, you use lightweight **Python Sentinel**
+
+**Scripts** running in the background:
 
 ```
 ● Comms Watcher: Monitors Gmail and WhatsApp (via local web-automation or APIs) and
@@ -247,11 +312,11 @@ self.needs_action = self.vault_path / 'Needs_Action'
 self.check_interval = check_interval
 self.logger = logging.getLogger(self.__class__.__name__)
 
-
 @abstractmethod
 def check_for_updates(self) -> list:
 '''Return list of new items to process'''
 pass
+
 
 @abstractmethod
 def create_action_file(self, item) -> Path:
@@ -296,11 +361,12 @@ msg = self.service.users().messages().get(
 userId='me', id=message['id']
 ).execute()
 
-
 # Extract headers
 headers = {h['name']: h['value'] for h in msg['payload']['headers']}
 
 content = f'''---
+
+
 type: email
 from: {headers.get('From', 'Unknown')}
 subject: {headers.get('Subject', 'No Subject')}
@@ -346,12 +412,12 @@ self.session_path, headless=True
 )
 page = browser.pages[0]
 page.goto('https://web.whatsapp.com')
-
-
 page.wait_for_selector('[data-testid="chat-list"]')
 
 # Find unread messages
 unread = page.query_selector_all('[aria-label*="unread"]')
+
+
 messages = []
 for chat in unread:
 text = chat.inner_text().lower()
@@ -395,11 +461,11 @@ New file dropped for processing.
 
 When the **Watcher** detects a change, it triggers a Claude command:
 
-
 6. **Read:** "Check /Needs_Action and /Accounting."
 7. **Think:** "I see a WhatsApp message from a client asking for an invoice and a bank
     transaction showing a late payment fee."
 8. **Plan:** Claude creates a Plan.md in Obsidian with checkboxes for the next steps.
+
 
 ### C. Action (The "Hands")
 
@@ -428,6 +494,8 @@ email-mcp Send, draft, search emails Gmail integration
 ```
 ```
 browser-mcp Navigate, click, fill forms Payment portals
+```
+```
 calendar-mcp Create, update events Scheduling
 ```
 ```
@@ -450,13 +518,13 @@ Configure MCP servers in your Claude Code settings:
 },
 {
 "name": "browser",
-
-
 "command": "npx",
 "args": ["@anthropic/browser-mcp"],
 "env": {
 "HEADLESS": "true"
 }
+
+
 }
 ]
 }
@@ -495,12 +563,50 @@ Move this file to /Rejected folder.
 The Orchestrator watches the /Approved folder and triggers the actual MCP action when files
 appear.
 
+###### D. Persistence (The "Ralph Wiggum" Loop)
+
+Claude Code runs in interactive mode - after processing a prompt, it waits for more input.
+To keep your AI Employee working autonomously until a task is complete, use the
+**Ralph Wiggum pattern** : a Stop hook that intercepts Claude's exit and feeds the prompt back.
+
+**How Does It Work?**
+
+1. Orchestrator creates state file with prompt
+2. Claude works on task
+3. Claude tries to exit
+4. Stop hook checks: Is task file in /Done?
+
+
+5. YES → Allow exit (complete)
+6. NO → Block exit, re-inject prompt, and allow Claude to see its own previous failed output
+    (loop continues).
+7. Repeat until complete or max iterations
+
+**Usage**
+
+```bash
+# Start a Ralph loop
+/ralph-loop "Process all files in /Needs_Action, move to /Done when complete" \
+--completion-promise "TASK_COMPLETE" \
+--max-iterations 10
+```
+
+**Two Completion Strategies:**
+
+1. **Promise-based (simple):** Claude outputs `<promise>TASK_COMPLETE</promise>`
+2. **File movement (advanced - Gold tier)** : Stop hook detects when task file moves to
+    /Done
+       ● More reliable (completion is natural part of workflow)
+       ● Orchestrator creates state file programmatically
+       ● See reference implementation for details
+
+Reference: https://github.com/anthropics/claude-code/tree/main/.claude/plugins/ralph-wiggum
+
 #### 3. Continuous vs. Scheduled Operations
 
 ```
 Operation Type Example Task Local Trigger
 ```
-
 ```
 Scheduled Daily Briefing: Summarize
 business tasks at 8:00 AM.
@@ -534,6 +640,7 @@ folder.
 
 One of the coolest features you can add is the **Autonomous Business Audit** :
 
+
 1. **The Trigger:** A scheduled task runs every Sunday night.
 2. **The Process:** Claude Code reads your Business_Goals.md, checks your Tasks/Done
     folder for the week, and checks your Bank_Transactions.md.
@@ -563,7 +670,6 @@ review_frequency: weekly
 - Monthly goal: $10,
 - Current MTD: $4,
 
-
 ### Key Metrics to Track
 | Metric | Target | Alert Threshold |
 |--------|--------|-----------------|
@@ -584,6 +690,7 @@ Flag for review if:
 - Duplicate functionality with another tool
 
 ##### Weekly Audit Logic
+
 
 Claude uses pattern matching to identify subscription usage:
 
@@ -616,7 +723,6 @@ generated: 2026-01-06T07:00:00Z
 period: 2025-12-30 to 2026-01-
 ---
 
-
 # Monday Morning CEO Briefing
 
 ## Executive Summary
@@ -636,6 +742,8 @@ Strong week with revenue ahead of target. One bottleneck identified.
 
 ## Bottlenecks
 | Task | Expected | Actual | Delay |
+
+
 |------|----------|--------|-------|
 | Client B proposal | 2 days | 5 days | +3 days |
 
@@ -658,7 +766,7 @@ Strong week with revenue ahead of target. One bottleneck identified.
 
 ```
 ● Knowledge Base: Obsidian (Local Markdown).
-● Logic Engine: Claude Code (running claude-3-5-sonnet or any other LLM using Claude
+● Logic Engine: Claude Code (running claude-4-5-opus or any other LLM using Claude
 Code Router).
 ● External Integration: MCP Servers (Local Node.js/Python scripts) for Gmail, WhatsApp,
 and Banking.
@@ -666,7 +774,6 @@ and Banking.
 ● Automation Glue: A master Python Orchestrator.py that handles the timing and folder
 watching.
 ```
-
 ### 6. Security & Privacy Architecture
 
 Security is non-negotiable when building an autonomous system that handles banking, email,
@@ -683,6 +790,7 @@ Windows Credential Manager, or 1Password CLI)
 ● Create a .env file (add to .gitignore immediately) for local development
 ● Rotate credentials monthly and after any suspected breach
 ```
+
 Example .env structure:
 
 # .env - NEVER commit this file
@@ -715,7 +823,6 @@ logger.info(f'[DRY RUN] Would send email to {to}')
 return
 # Actual send logic here
 
-
 ##### 6.3 Audit Logging
 
 Every action the AI takes must be logged for review:
@@ -736,6 +843,7 @@ Store logs in /Vault/Logs/YYYY-MM-DD.json and retain for a minimum 90 days.
 
 ##### 6.4 Permission Boundaries
 
+
 ```
 Action Category Auto-Approve Threshold Always Require Approval
 ```
@@ -744,6 +852,8 @@ Email replies To known contacts New contacts, bulk sends
 ```
 ```
 Payments < $50 recurring All new payees, > $
+```
+```
 Social media Scheduled posts Replies, DMs
 ```
 ```
@@ -767,12 +877,13 @@ Authentication Expired token, revoked access Alert human, pause operations
 ```
 ```
 Logic Claude misinterprets message Human review queue
+```
+```
 Data Corrupted file, missing field Quarantine + alert
 ```
 ```
 System Orchestrator crash, disk full Watchdog + auto-restart
 ```
-
 ##### 7.2 Retry Logic
 
 # retry_handler.py
@@ -792,6 +903,8 @@ raise
 delay = min(base_delay * (2 ** attempt), max_delay)
 logger.warning(f'Attempt {attempt+1} failed, retrying in
 {delay}s')
+
+
 time.sleep(delay)
 return wrapper
 return decorator
@@ -821,8 +934,6 @@ PROCESSES = {
 
 def check_and_restart():
 for name, cmd in PROCESSES.items():
-
-
 pid_file = Path(f'/tmp/{name}.pid')
 if not is_process_running(pid_file):
 logger.warning(f'{name} not running, restarting...')
@@ -837,17 +948,24 @@ time.sleep(60)
 #### Learning Material To Get Started:
 
 These resources provide a foundational guide on how to integrate Claude Code agentic
+
 capabilities with local tools and file systems, which is the exact "foundation layer" required for
+
 your personal employee project.
 
+
 Claude Code Chapter of our Textbook
+
 https://agentfactory.panaversity.org/docs/AI-Tool-Landscape/claude-code-features-and-work
+
 flows
 
 Turning Claude Code into an Employee
+
 https://www.facebook.com/reel/
 
 Claude Code and Obsidian for Personal Automation
+
 https://www.youtube.com/watch?v=sCIS05Qt79Y
 
 # Claude Agent Skills - Automate Your Workflow Fast
@@ -857,6 +975,18 @@ https://www.youtube.com/watch?v=nbqqnl3JdR
 Claude Code just Built me an AI Agent Team (Claude Code + Skills + MCP)
 
 ## https://www.youtube.com/watch?v=0J2_YGuNrDo
+
+**Why Odoo (Value-for-Money ERP Perspective)?**
+
+https://chatgpt.com/share/6967deaf-9404-8001-9ad7-03017255ebaf
+
+**Odoo Official Documentation (Community Edition)**
+
+https://www.odoo.com/documentation
+
+**Odoo 19 External JSON-2 API (recommended for your Odoo 19+ MCP integration):**
+
+https://www.odoo.com/documentation/19.0/developer/reference/external_api.html
 
 Curated resources organized by learning stage. Start with Prerequisites, then progress through
 each level.
@@ -869,14 +999,13 @@ Topic Resource Time
 ```
 Presentation https://docs.google.com/presentation/
 d/1UGvCUk1-O8m5i-aTWQNxzg8EXo
+KzPa8fgcwfNh8vRjQ/edit?usp=sharin
+g
 ```
 ```
 2 hours
 ```
-
 ```
-KzPa8fgcwfNh8vRjQ/edit?usp=sharin
-g
 Claude Code Fundamentals https://agentfactory.panaversity.org/do
 cs/AI-Tool-Landscape/claude-code-fea
 tures-and-workflows
@@ -892,6 +1021,9 @@ Python File I/O realpython.com/read-write-files-python 1 hour
 ```
 ```
 MCP Introduction modelcontextprotocol.io/introduction 1 hour
+```
+
+```
 Agent Skills platform.claude.com/docs/en/agents-a
 nd-tools/agent-skills/overview
 ```
@@ -915,6 +1047,8 @@ Building MCP Servers modelcontextprotocol.io/quickstart Tutorial
 ```
 ```
 Claude Agent Teams youtube.com/watch?v=0J2_YGuNrDo Video
+```
+```
 Gmail API Setup developers.google.com/gmail/api/quic
 kstart
 ```
@@ -937,11 +1071,10 @@ Playwright Automation playwright.dev/python/docs/intro Docs
 ##### Participation Rules
 
 1. Individual
-
-
 2. All code must be original or properly attributed open-source
 3. Must use Claude Code as the primary reasoning engine
 4. Projects must include documentation and a demo video
+
 
 ##### Judging Criteria
 
@@ -950,6 +1083,8 @@ Criterion Weight Description
 ```
 ```
 Functionality 30% Does it work? Are core features complete?
+```
+```
 Innovation 25% Creative solutions, novel integrations
 ```
 ```
@@ -985,7 +1120,6 @@ the request, (2) generate the invoice, (3) send it via email, and (4) log the tr
 
 The WhatsApp Watcher detects a message containing the keyword "invoice":
 
-
 # Detected message:
 # From: Client A
 # Text: "Hey, can you send me the invoice for January?"
@@ -996,6 +1130,7 @@ The WhatsApp Watcher detects a message containing the keyword "invoice":
 ##### Step 2: Reasoning (Claude Code)
 
 The Orchestrator triggers Claude to process the Needs_Action folder:
+
 
 # Claude reads the file and creates:
 # /Vault/Plans/PLAN_invoice_client_a.md
@@ -1027,7 +1162,7 @@ Claude creates an approval request:
 ---
 action: send_email
 to: client_a@email.com
-subject: January 2026 Invoice - $1,
+subject: January 2026 Invoice - $1,500
 attachment: /Vault/Invoices/2026-01_Client_A.pdf
 ---
 
@@ -1036,7 +1171,6 @@ Ready to send. Move to /Approved to proceed.
 You review and move the file to /Approved.
 
 ##### Step 4: Action (Email MCP)
-
 
 The Orchestrator detects the approved file and calls the Email MCP:
 
@@ -1049,6 +1183,7 @@ attachment: '/Vault/Invoices/2026-01_Client_A.pdf'
 });
 
 # Result logged to /Vault/Logs/2026-01-07.json
+
 
 ##### Step 5: Completion
 
@@ -1087,7 +1222,6 @@ Google Cloud Console. Check the project settings.
 
 **Q: Watcher scripts stop running overnight**
 
-
 A: Use a process manager like PM2 (Node.js) or supervisord (Python) to keep them alive.
 Alternatively, implement the Watchdog pattern from Section 7.
 
@@ -1100,6 +1234,7 @@ autonomy thresholds so more actions require approval.
 
 A: Check that the server process is running (ps aux | grep mcp). Verify the path in mcp.json is
 absolute. Check Claude Code logs for connection errors.
+
 
 ##### Security Concerns
 
@@ -1270,16 +1405,19 @@ However, standard Python scripts invoked via terminal (e.g., python watcher.py) 
 ● They do not auto-recover after a system reboot.
 ```
 **"Process Management"** solves this by wrapping your scripts in a supervisor that ensures
+
 state persistence.
 
 ###### The Problem: Script Fragility
 
 If you run python gmail_watcher.py and your internet blips for 5 seconds, the script throws an
+
 exception and exits. Your AI employee is now "dead" until you manually SSH in and restart it.
 
 ###### The Solution: A Process Manager (PM)
 
 A PM (like **PM2** , **supervisord** , or **Systemd** ) acts as a watchdog. It daemonizes your script and
+
 monitors its PID.
 
 ```
@@ -1295,22 +1433,27 @@ the script on boot^3.
 failures over long periods.
 ```
 Quick Recommendation:
+
 For this hackathon, PM2 is often the easiest developer-friendly tool (originally for Node, but
+
 handles Python perfectly):
 
 # Install PM2
+
 npm install -g pm2
 
 # Start your watcher and keep it alive forever
 pm2 start gmail_watcher.py --interpreter python3
 
 # Freeze this list to start on reboot
+
 pm2 save
 
 
 pm2 startup
 
 Alternatively, the hackathon document suggests writing a custom Python "Watchdog" script
+
 that loops and checks PIDs, effectively building a primitive process manager yourself.
 
 #### Next Step: Advanced Custom Cloud FTE Architecture

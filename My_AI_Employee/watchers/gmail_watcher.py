@@ -75,7 +75,7 @@ class GmailWatcher(BaseWatcher):
             raise
 
         # Initialize deduplication tracker
-        dedupe_file = os.getenv('GMAIL_DEDUPE_FILE', 'My_AI_Employee/.gmail_dedupe.json')
+        dedupe_file = os.getenv('GMAIL_DEDUPE_FILE', '.gmail_dedupe.json')
         self.dedupe_tracker = DedupeTracker(dedupe_file)
 
         # Track last check time for incremental fetching
@@ -439,7 +439,7 @@ This email was detected by Gmail watcher and requires human approval before resp
 def main():
     """Main entry point for Gmail watcher."""
     # Load configuration
-    vault_path = os.getenv('VAULT_PATH', 'My_AI_Employee/AI_Employee_Vault')
+    vault_path = os.getenv('VAULT_PATH', 'AI_Employee_Vault')
     check_interval = int(os.getenv('GMAIL_CHECK_INTERVAL', '60'))
 
     # Configure logging

@@ -217,6 +217,19 @@ class LinkedInWatcher(BaseWatcher):
             self.logger.error(f"Error checking LinkedIn updates: {e}")
             return []
 
+    def create_action_file(self, item: Dict[str, Any]) -> Optional[Path]:
+        """
+        Create .md file in Needs_Action folder (required by BaseWatcher).
+
+        Args:
+            item: LinkedIn activity item to process
+
+        Returns:
+            Path to created file, or None if creation failed
+        """
+        result = self._create_action_item(item)
+        return Path(result) if result else None
+
     def _create_action_item(self, activity: Dict[str, Any]) -> Optional[str]:
         """
         Create action item from LinkedIn activity.

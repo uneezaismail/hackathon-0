@@ -25,7 +25,7 @@ class Config:
     VAULT_PATH: Path = Path(os.getenv('VAULT_PATH', 'My_AI_Employee/AI_Employee_Vault'))
 
     # Watcher Configuration
-    WATCH_FOLDER: Path = Path(os.getenv('WATCH_FOLDER', 'watch_folder'))
+    WATCH_FOLDER: Path = Path(os.getenv('WATCH_FOLDER', 'AI_Employee_Vault/Inbox'))
     WATCH_MODE: str = os.getenv('WATCH_MODE', 'events')  # 'events' or 'polling'
     CHECK_INTERVAL: int = int(os.getenv('CHECK_INTERVAL', '60'))  # seconds
 

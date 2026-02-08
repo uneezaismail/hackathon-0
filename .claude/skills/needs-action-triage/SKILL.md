@@ -1,7 +1,8 @@
 ---
 name: needs-action-triage
 description: >
-  Triage and plan items in an Obsidian vault's /Needs_Action folder for Hackathon Zero (Bronze tier).
+  Triage and plan items in an Obsidian vault's /Needs_Action folder for Hackathon Zero (Bronze/Silver/Gold tier).
+  Handles all action types including emails, social media posts, Odoo accounting operations, and general tasks.
   This skill should be used when the user asks to "process Needs_Action", "triage pending items",
   "create a plan for each item", "turn watcher output into tasks", "update the dashboard after new items",
   "summarize what needs attention", or when Claude detects new action-item markdown files created by a watcher.
@@ -9,8 +10,8 @@ description: >
   "archive to Done", "apply Company_Handbook rules", "process tasks", "check pending tasks",
   "handle Needs_Action items", "complete my tasks", "check what needs to be done", "process pending tasks",
   "check Needs_Action folder", "complete task requests", "move finished work to Done folder",
-  "update activity dashboard", or when the user mentions the Needs_Action folder, task processing,
-  or wants to see completed work moved to Done.
+  "update activity dashboard", "process invoices", "handle social media requests", or when the user mentions
+  the Needs_Action folder, task processing, or wants to see completed work moved to Done.
 ---
 
 # Needs Action Triage
@@ -30,6 +31,13 @@ Convert watcher-created inputs into clear next steps **inside the vault**.
 - **HITL Routing**: Move items to `Pending_Approval/` if they require human sign-off.
 - **Audit Logging**: Ensure actions are logged to `/Logs/` via the `@audit-logger` skill.
 - **MCP Integration**: Create drafts that can be picked up by the `@mcp-executor`.
+
+**Gold Tier Scope (Further Expanded):**
+- **Odoo Integration**: Handle invoice requests, payment notifications, expense categorization.
+- **Social Media**: Process Facebook, Instagram, Twitter post requests with platform-specific content.
+- **Financial Actions**: Route all Odoo operations through approval workflow.
+- **Multi-Platform Posts**: Create platform-specific content for cross-posting.
+- **CEO Briefing Data**: Ensure all completed tasks have metadata for weekly briefing generation.
 
 ## Workflow (Bronze & Silver)
 

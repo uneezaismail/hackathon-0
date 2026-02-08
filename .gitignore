@@ -59,6 +59,7 @@ watcher_state.json
 .env.local
 .env.whatsapp
 .mcp.json
+.watchdog_state.json*
 
 # Logs
 *.log
@@ -96,6 +97,16 @@ My_AI_Employee/AI_Employee_Vault/Needs_Action/*.md
 My_AI_Employee/AI_Employee_Vault/Pending_Approval/*.md
 My_AI_Employee/AI_Employee_Vault/Approved/*.md
 My_AI_Employee/AI_Employee_Vault/Rejected/*.md
+My_AI_Employee/AI_Employee_Vault/Briefings/*.md
+
+# Gold Tier - Ralph Wiggum Loop state
+.ralph_state.json
+
+# Gold Tier - Offline operation queues
+.odoo_queue.jsonl
+.facebook_queue.jsonl
+.instagram_queue.jsonl
+.twitter_queue.jsonl
 
 # Test watch folder content
 My_AI_Employee/test_watch_folder/*.txt
@@ -104,3 +115,72 @@ My_AI_Employee/test_watch_folder/*.pdf
 
 # old-code
 *old_files
+gold_summaries
+
+# ============================================
+# Gold Tier - MCP Servers (Keep directory structure only)
+# ============================================
+# MCP server implementations contain API integration logic
+# Keep directory with .gitkeep but exclude all Python files
+My_AI_Employee/mcp_servers/*.py
+!My_AI_Employee/mcp_servers/__init__.py
+
+# ============================================
+# Setup Scripts with Hardcoded Credentials
+# ============================================
+# These scripts contain hardcoded usernames/passwords for testing
+My_AI_Employee/scripts/setup/setup_twitter_session.py
+My_AI_Employee/scripts/setup/setup_twitter_session_verified.py
+My_AI_Employee/scripts/setup/diagnose_facebook_token.py
+My_AI_Employee/scripts/setup/regenerate_token.py
+My_AI_Employee/scripts/setup/get_permanent_token.py
+
+# ============================================
+# Test/Diagnostic Scripts (Root Directory)
+# ============================================
+# Temporary test scripts that may contain credentials or test data
+My_AI_Employee/check_odoo_hr_module.py
+My_AI_Employee/create_invoices_raw.py
+My_AI_Employee/create_odoo_invoices_direct.py
+My_AI_Employee/diagnose_facebook_token.py
+My_AI_Employee/get_permanent_token.py
+My_AI_Employee/post_draft_invoices.py
+My_AI_Employee/quick_verify_odoo.py
+My_AI_Employee/regenerate_token.py
+My_AI_Employee/setup_twitter_session.py
+My_AI_Employee/setup_twitter_session_verified.py
+My_AI_Employee/test_mcp_fix.py
+My_AI_Employee/test_odoo_invoice_fix.py
+My_AI_Employee/verify_odoo_operations.py
+
+# ============================================
+# Startup/Testing Shell Scripts
+# ============================================
+My_AI_Employee/GOLD_TIER_STARTUP.sh
+My_AI_Employee/START_RALPH_LOOP.sh
+My_AI_Employee/TESTING_GUIDE.sh
+My_AI_Employee/quick_start.sh
+
+# ============================================
+# Documentation with Sensitive Information
+# ============================================
+# These files may contain credentials, API keys, or sensitive test data
+My_AI_Employee/ODOO_MCP_COMPLETE_FIX.md
+My_AI_Employee/ODOO_MCP_FIX_COMPLETE.md
+My_AI_Employee/ODOO_MCP_TROUBLESHOOTING.md
+My_AI_Employee/PROPER_TESTING_FLOW.txt
+My_AI_Employee/START_GOLD_TIER.md
+My_AI_Employee/START_NOW.txt
+My_AI_Employee/TEST_FILES_INVENTORY.txt
+My_AI_Employee/NEXT_STEPS.md
+
+# ============================================
+# Vault Content with Sensitive Data
+# ============================================
+# Done folder may contain emails, invoices, and other sensitive business data
+My_AI_Employee/AI_Employee_Vault/Done/*.md
+!My_AI_Employee/AI_Employee_Vault/Done/.gitkeep
+
+# Inbox folder may contain uploaded files with sensitive information
+My_AI_Employee/AI_Employee_Vault/Inbox/*
+!My_AI_Employee/AI_Employee_Vault/Inbox/.gitkeep
