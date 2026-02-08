@@ -194,18 +194,26 @@ The file has been detected by a watcher and needs processing."""
 
         try:
             # Call Claude Code via subprocess (using ccr code command)
+            # Timeout increased to 300s (5 min) for complex tasks like Odoo operations
             result = subprocess.run(
                 ['ccr', 'code', '-p', prompt],
                 capture_output=True,
                 text=True,
-                timeout=120
+                timeout=300
             )
 
             if result.returncode == 0:
                 logger.info(f"✅ Claude processed {file_path.name} successfully")
+                # Log Claude's output for debugging
+                if result.stdout:
+                    logger.info(f"Claude output: {result.stdout[:500]}")  # First 500 chars
             else:
                 logger.error(f"❌ Claude failed to process {file_path.name}")
-                logger.error(f"Error: {result.stderr}")
+                logger.error(f"Return code: {result.returncode}")
+                if result.stderr:
+                    logger.error(f"Error output: {result.stderr}")
+                if result.stdout:
+                    logger.error(f"Standard output: {result.stdout}")
 
         except subprocess.TimeoutExpired:
             logger.error(f"⏱️ Claude timed out processing {file_path.name}")
@@ -253,18 +261,26 @@ CRITICAL: After successful execution, you MUST move the original action item fil
 
         try:
             # Call Claude Code via subprocess (using ccr code command)
+            # Timeout increased to 300s (5 min) for complex MCP operations
             result = subprocess.run(
                 ['ccr', 'code', '-p', prompt],
                 capture_output=True,
                 text=True,
-                timeout=180
+                timeout=300
             )
 
             if result.returncode == 0:
                 logger.info(f"✅ Claude executed {file_path.name} successfully")
+                # Log Claude's output for debugging
+                if result.stdout:
+                    logger.info(f"Claude output: {result.stdout[:500]}")  # First 500 chars
             else:
                 logger.error(f"❌ Claude failed to execute {file_path.name}")
-                logger.error(f"Error: {result.stderr}")
+                logger.error(f"Return code: {result.returncode}")
+                if result.stderr:
+                    logger.error(f"Error output: {result.stderr}")
+                if result.stdout:
+                    logger.error(f"Standard output: {result.stdout}")
 
         except subprocess.TimeoutExpired:
             logger.error(f"⏱️ Claude timed out executing {file_path.name}")

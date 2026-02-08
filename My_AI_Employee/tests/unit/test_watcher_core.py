@@ -6,9 +6,13 @@ prevents duplicates, and handles errors gracefully.
 """
 
 import pytest
+import sys
 import time
 from pathlib import Path
 from datetime import datetime
+
+# Add My_AI_Employee directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from watchers.filesystem_watcher import FilesystemWatcher
 from utils.frontmatter_utils import load_action_item

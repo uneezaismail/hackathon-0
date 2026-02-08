@@ -217,5 +217,169 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - Python 3.13+ + OdooRPC (Odoo JSON-RPC client), facebook-sdk (Facebook Graph API), tweepy (Twitter API v2), FastMCP (MCP framework, from Silver tier), keyring (credential storage), watchdog (filesystem monitoring, from Bronze tier), python-frontmatter (YAML parsing, from Bronze tier), Playwright (browser automation, from Silver tier) (003-gold-ai-employee)
 - Obsidian vault (local markdown files), Odoo database (self-hosted PostgreSQL), JSONL audit logs (/Logs/YYYY-MM-DD.json), local queue files for offline resilience, Ralph state file (.ralph_state.json) (003-gold-ai-employee)
 
+## Gold Tier AI Employee Skills
+
+This project uses 14 specialized skills that work together to create an autonomous AI Employee system. Skills are automatically invoked based on context - you don't need to manually call them in most cases.
+
+### Skill Categories and Usage
+
+#### 1. INPUT LAYER (Perception) - 2 Skills
+
+**watcher-runner-filesystem** (Bronze Tier)
+- Monitors local drop folder for new files
+- Creates action items in `/Needs_Action/`
+- Use when: Setting up Bronze tier, testing filesystem watcher
+- Trigger: "run filesystem watcher", "start Bronze tier watcher"
+
+**multi-watcher-runner** (Silver/Gold Tier)
+- Orchestrates Gmail, LinkedIn, WhatsApp, and filesystem watchers
+- Monitors multiple input sources simultaneously
+- Creates action items in `/Needs_Action/`
+- Use when: Setting up Silver/Gold tier, running all watchers
+- Trigger: "start all watchers", "run multi-watcher", "monitor Gmail WhatsApp LinkedIn"
+
+#### 2. PROCESSING LAYER (Reasoning) - 3 Skills
+
+**obsidian-vault-ops** (Core Infrastructure)
+- Safely read/write/move files in Obsidian vault
+- Preserves YAML frontmatter, prevents data loss
+- Used by: ALL other skills for file operations
+- Use when: Any vault file operation needed
+- Trigger: Automatic - invoked by other skills
+
+**needs-action-triage** (Core Processing)
+- Processes items from `/Needs_Action/` folder
+- Reads `Company_Handbook.md` for rules
+- Creates plans in `/Plans/` folder
+- Determines if approval needed
+- Use when: Processing new action items, creating plans
+- Trigger: "process Needs_Action", "triage pending items", "check what needs to be done"
+
+**approval-workflow-manager** (HITL Workflow)
+- Routes sensitive actions for human approval
+- Creates approval requests in `/Pending_Approval/`
+- Tracks approval decisions
+- Use when: External actions, financial operations, sensitive content
+- Trigger: Automatic - invoked by needs-action-triage when approval needed
+
+#### 3. EXECUTION LAYER (Action) - 4 Skills
+
+**mcp-executor** (Core Execution)
+- Executes approved actions via MCP servers
+- Routes to appropriate MCP server (email, Odoo, social media)
+- Handles errors and retries
+- Moves completed items to `/Done/`
+- Use when: Executing approved actions
+- Trigger: Automatic - processes `/Approved/` folder
+
+**odoo-integration** (Accounting/ERP)
+- Integrates with Odoo Community for accounting
+- Creates invoices, records payments, tracks expenses
+- Generates financial reports
+- Use when: Accounting operations, financial tasks
+- Trigger: "create invoice", "record payment", "generate financial report"
+
+**social-media-poster** (Social Media)
+- Posts to Facebook, Instagram, Twitter, LinkedIn
+- Adapts content for each platform
+- Tracks engagement metrics
+- Use when: Social media posting, cross-platform content
+- Trigger: "post to facebook", "post to instagram", "share on social media"
+
+**ralph-wiggum-runner** (Autonomous Operation)
+- Implements autonomous loop pattern
+- Keeps Claude working until task complete
+- Uses stop hook to prevent exit
+- Monitors `/Done/` folder for completion
+- Use when: Autonomous task processing, batch operations
+- Trigger: "start ralph loop", "process until complete", "run autonomously"
+
+#### 4. INTELLIGENCE LAYER (Business Intelligence) - 2 Skills
+
+**ceo-briefing-generator** (Weekly Reporting)
+- Generates weekly business and accounting audit
+- Analyzes completed tasks, financial data, social metrics
+- Identifies bottlenecks and opportunities
+- Creates Monday morning CEO briefing
+- Use when: Weekly reporting, business analysis
+- Trigger: "generate ceo briefing", "weekly business audit", "monday morning briefing"
+
+**audit-logger** (Compliance Tracking)
+- Logs all external actions with full audit trail
+- Records who, what, when, why, result
+- Sanitizes credentials automatically
+- Generates compliance reports
+- Use when: Logging actions, compliance reporting
+- Trigger: Automatic - invoked by all execution skills
+
+#### 5. VALIDATION LAYER (Quality Assurance) - 2 Skills
+
+**bronze-demo-check** (Bronze Validation)
+- Validates Bronze tier end-to-end workflow
+- Checks vault structure, watcher, triage, dashboard
+- Use when: Validating Bronze tier, preparing demo
+- Trigger: "validate bronze tier", "bronze tier checklist", "demo bronze"
+
+**gold-tier-validator** (Gold Validation)
+- Validates complete Gold tier implementation
+- Checks all 5 user stories, MCPs, Ralph Loop, CEO briefing
+- Generates validation report
+- Use when: Validating Gold tier, preparing submission
+- Trigger: "validate gold tier", "check gold implementation", "submission readiness"
+
+#### 6. META LAYER (Skill Management) - 1 Skill
+
+**skill-creator** (Skill Development)
+- Guides creation of new skills
+- Provides best practices and patterns
+- Use when: Creating or updating skills
+- Trigger: User explicitly asks to create a skill
+
+### Gold Tier Workflow Integration
+
+**Complete Workflow (All Skills Working Together):**
+
+```
+1. INPUT (Perception)
+   Watchers detect inputs → Create files in /Needs_Action/
+   Skills: watcher-runner-filesystem, multi-watcher-runner
+
+2. PROCESSING (Reasoning)
+   Ralph Loop processes files → Create plans → Route for approval
+   Skills: ralph-wiggum-runner, needs-action-triage,
+           approval-workflow-manager, obsidian-vault-ops
+
+3. APPROVAL (Human-in-the-Loop)
+   Human reviews in Obsidian → Approve/reject
+   Skills: approval-workflow-manager, obsidian-vault-ops
+
+4. EXECUTION (Action)
+   Ralph Loop executes → Route to MCP servers → Log results
+   Skills: mcp-executor, odoo-integration, social-media-poster,
+           audit-logger, obsidian-vault-ops
+
+5. INTELLIGENCE (Business Intelligence)
+   Weekly briefing → Analyze data → Generate insights
+   Skills: ceo-briefing-generator, odoo-integration,
+           social-media-poster, audit-logger, obsidian-vault-ops
+
+6. VALIDATION (Quality Assurance)
+   Before submission → Validate implementation
+   Skills: bronze-demo-check, gold-tier-validator
+```
+
+### Key Principles for Using Skills
+
+1. **Most skills are invoked automatically** - Ralph Loop orchestrates the workflow
+2. **Don't manually invoke core skills** - They trigger based on context
+3. **obsidian-vault-ops is used by all skills** - It's the file operation layer
+4. **audit-logger runs automatically** - All actions are logged
+5. **Ralph Loop is the orchestrator** - It keeps everything running autonomously
+
+### Reference Documentation
+
+For complete workflow details, see: `COMPLETE_SKILLS_WORKFLOW_GUIDE.md`
+
 ## Recent Changes
 - 001-bronze-ai-employee: Added Python 3.13+ + `watchdog`, `python-frontmatter` (plus existing repo deps)
+- 003-gold-ai-employee: Added 14 specialized skills for autonomous AI Employee operation

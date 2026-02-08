@@ -12,8 +12,8 @@ Usage:
 import sys
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add My_AI_Employee directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from vault_ops.dashboard_updater import DashboardUpdater, update_watcher_status
 

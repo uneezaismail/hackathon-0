@@ -26,6 +26,7 @@ dependencies = [
     "pyyaml>=6.0.1",          # YAML parsing (required by python-frontmatter)
     "python-dateutil>=2.8.2", # Better date parsing for CEO briefing
     "schedule>=1.2.0",        # Job scheduling for weekly CEO briefing
+    "requests>=2.31.0",       # HTTP library for token regeneration and API calls
 ]
 
 [build-system]

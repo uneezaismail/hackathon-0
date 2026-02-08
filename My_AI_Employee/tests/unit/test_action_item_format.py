@@ -6,9 +6,14 @@ for reliable triage and processing.
 """
 
 import pytest
+import sys
 from pathlib import Path
 from datetime import datetime
 import frontmatter
+
+# Add My_AI_Employee directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from utils.frontmatter_utils import (
     create_action_item,
     save_action_item,

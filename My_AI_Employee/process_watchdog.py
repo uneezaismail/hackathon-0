@@ -55,27 +55,27 @@ CRASH_LOOP_WINDOW = 300  # seconds
 COMPONENTS = {
     'orchestrator': {
         'name': 'Orchestrator',
-        'command': ['python3', 'My_AI_Employee/run_watcher.py'],
-        'cwd': str(Path(__file__).parent),
+        'command': ['uv', 'run', 'python', 'orchestrator.py'],
+        'cwd': str(Path(__file__).parent),  # My_AI_Employee directory
         'enabled': True
     },
     'gmail_watcher': {
         'name': 'Gmail Watcher',
-        'command': ['python3', 'My_AI_Employee/watchers/gmail_watcher.py'],
-        'cwd': str(Path(__file__).parent),
-        'enabled': False  # Disabled by default (Silver tier)
+        'command': ['uv', 'run', 'python', 'watchers/gmail_watcher.py'],
+        'cwd': str(Path(__file__).parent),  # My_AI_Employee directory
+        'enabled': True  # Enabled for Gold tier testing
     },
     'whatsapp_watcher': {
         'name': 'WhatsApp Watcher',
-        'command': ['python3', 'My_AI_Employee/watchers/whatsapp_watcher.py'],
-        'cwd': str(Path(__file__).parent),
-        'enabled': False  # Disabled by default (Silver tier)
+        'command': ['uv', 'run', 'python', 'watchers/whatsapp_watcher.py'],
+        'cwd': str(Path(__file__).parent),  # My_AI_Employee directory
+        'enabled': False  # Not using for this test
     },
     'linkedin_watcher': {
         'name': 'LinkedIn Watcher',
-        'command': ['python3', 'My_AI_Employee/watchers/linkedin_watcher.py'],
-        'cwd': str(Path(__file__).parent),
-        'enabled': False  # Disabled by default (Silver tier)
+        'command': ['uv', 'run', 'python', 'watchers/linkedin_watcher.py'],
+        'cwd': str(Path(__file__).parent),  # My_AI_Employee directory
+        'enabled': False  # Not using for this test
     }
 }
 
