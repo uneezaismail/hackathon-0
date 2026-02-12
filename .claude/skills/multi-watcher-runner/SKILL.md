@@ -276,40 +276,168 @@ After watchers create action items:
 
 ## Production Deployment
 
-### Option 1: PM2 Process Manager (Recommended)
+### Deployment Approaches
+
+**Thread-Based (Development)**: Use `run_watcher.py` for development and testing
+- Simple to start/stop
+- All watchers in one process
+- Easy debugging with unified logs
+- Good for development and testing
+
+**PM2-Based (Production)**: Use `manage_watchers.py` for production deployment
+- Individual watcher processes
+- Advanced health monitoring
+- Memory/CPU metrics tracking
+- Automatic restart on crash
+- Dashboard integration
+- Production-grade reliability
+
+### Option 1: PM2 Process Manager (Recommended for Production)
+
+#### Quick Start with PM2 Management
 
 ```bash
 # Install PM2
 npm install -g pm2
 
-# Create ecosystem.config.js
-cat > ecosystem.config.js << 'EOF'
-module.exports = {
-  apps: [{
-    name: 'ai-employee-watchers',
-    script: 'run_watcher.py',
-    args: '--watcher all',
-    interpreter: 'uv',
-    interpreter_args: 'run python',
-    cwd: '/path/to/My_AI_Employee',
-    autorestart: true,
-    max_restarts: 10,
-    min_uptime: '10s',
-    error_file: 'logs/pm2-error.log',
-    out_file: 'logs/pm2-out.log',
-    log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
-  }]
-};
-EOF
+# Start all watchers with PM2 management
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py --action start-all
 
-# Start with PM2
-pm2 start ecosystem.config.js
+# Check comprehensive status
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py --action status
 
-# Monitor
+# Health check with metrics
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py --action health
+```
+
+#### PM2 Management Commands
+
+**Start Individual Watcher:**
+```bash
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py \
+  --action start \
+  --watcher gmail
+```
+
+**Stop Individual Watcher:**
+```bash
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py \
+  --action stop \
+  --watcher gmail
+```
+
+**Restart Individual Watcher:**
+```bash
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py \
+  --action restart \
+  --watcher whatsapp
+```
+
+**Stop All Watchers:**
+```bash
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py --action stop-all
+```
+
+#### Comprehensive Status Display
+
+```bash
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py --action status
+```
+
+**Output:**
+```
+================================================================================
+MULTI-WATCHER STATUS (PM2)
+================================================================================
+
+📊 Summary:
+  Healthy:  3
+  Warning:  1
+  Offline:  0
+  Total:    4
+
+Watcher         | Status     | Memory       | CPU      | Restarts   | Uptime
+--------------------------------------------------------------------------------
+filesystem      | ✅ healthy | 45.2MB       | 2.1%     | 0          | 2.5h
+gmail           | ✅ healthy | 78.3MB       | 5.4%     | 0          | 2.5h
+linkedin        | ✅ healthy | 82.1MB       | 3.2%     | 0          | 2.5h
+whatsapp        | ⚠️ warning | 125.8MB      | 8.7%     | 2          | 1.2h
+
+================================================================================
+```
+
+#### Health Monitoring
+
+```bash
+python3 .claude/skills/multi-watcher-runner/scripts/manage_watchers.py --action health
+```
+
+**Health Status Levels:**
+- ✅ **Healthy**: Process online, memory < 80% limit, restarts < 5
+- ⚠️ **Warning**: Memory > 80% limit OR restarts > 5
+- 🔴 **Critical**: Process crashing repeatedly
+- ⏸️ **Offline**: Process not running
+
+**Automatic Dashboard Updates:**
+The PM2 manager automatically updates `Dashboard.md` with watcher status:
+
+```markdown
+## 🔍 Watcher Status
+
+- **Gmail**: ✅ HEALTHY (Memory: 78.3MB, CPU: 5.4%, Restarts: 0)
+- **Whatsapp**: ⚠️ WARNING (Memory: 125.8MB, CPU: 8.7%, Restarts: 2)
+- **Linkedin**: ✅ HEALTHY (Memory: 82.1MB, CPU: 3.2%, Restarts: 0)
+- **Filesystem**: ✅ HEALTHY (Memory: 45.2MB, CPU: 2.1%, Restarts: 0)
+
+*Last updated: 2026-02-12 15:30:45*
+```
+
+#### Watcher Configurations
+
+| Watcher | Memory Limit | Restart Policy | Check Interval |
+|---------|-------------|----------------|----------------|
+| Gmail | 100MB | Always | 60s |
+| WhatsApp | 150MB | Always | 60s |
+| LinkedIn | 100MB | Always | 300s (5min) |
+| Filesystem | 50MB | Always | 30s |
+
+#### Advanced PM2 Features
+
+**Memory-Based Auto-Restart:**
+- Watchers automatically restart if memory limit exceeded
+- Prevents memory leaks from crashing the system
+
+**Exponential Backoff:**
+- First restart: Immediate
+- Second restart: 3 seconds delay
+- Third restart: 6 seconds delay
+- Delay doubles each time
+
+**Crash Loop Detection:**
+- Threshold: 3 restarts in 5 minutes
+- Action: Alert and stop auto-restart
+- Recovery: Manual intervention required
+
+#### Direct PM2 Commands
+
+You can also use PM2 directly:
+
+```bash
+# List all watcher processes
+pm2 list
+
+# Monitor in real-time
 pm2 monit
 
 # View logs
-pm2 logs
+pm2 logs watcher-gmail
+pm2 logs watcher-whatsapp
+
+# Restart specific watcher
+pm2 restart watcher-gmail
+
+# Stop all watchers
+pm2 stop all
 
 # Auto-start on system reboot
 pm2 startup
