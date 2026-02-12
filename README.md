@@ -4,6 +4,7 @@
 **Version**: v0.3.0 (Gold Tier)
 **Architecture**: Hackathon Zero - Autonomous AI Employee System
 **Submission Ready**: ✅ Yes
+**Last Updated**: February 13, 2026
 
 ---
 
@@ -81,9 +82,10 @@ Personal AI Employee is an **autonomous business assistant** that monitors multi
 - `mcp_servers/browser_mcp.py` - Browser automation (Playwright)
 
 **Autonomous Operation**:
-- `ralph_wiggum_check.py` - Stop hook for autonomous loops
-- `start_ralph_loop.py` - Ralph Wiggum Loop orchestrator
-- `.ralph_state.json` - State persistence for crash recovery
+- `.claude/hooks/stop/ralph-wiggum.js` - Stop hook for autonomous loops (JavaScript)
+- `.claude/plugins/ralph-wiggum/` - Ralph Wiggum plugin with skill integration
+- `.claude/ralph-loop.local.md` - Active loop state (YAML frontmatter + prompt)
+- `My_AI_Employee/AI_Employee_Vault/Ralph_History/` - Archived loop states
 
 **Intelligence Layer**:
 - `ceo-briefing-generator` - Weekly business audit and CEO briefing
@@ -151,11 +153,12 @@ Personal AI Employee is an **autonomous business assistant** that monitors multi
 ### 3. Autonomous Operation (User Story 3)
 
 **Ralph Wiggum Loop**:
-- ✅ Keeps Claude working until task complete
-- ✅ File movement detection as completion signal
+- ✅ JavaScript stop hook for Claude Code integration
+- ✅ File movement detection (Needs_Action/ → Done/)
+- ✅ Promise-based completion detection (`<promise>TASK_COMPLETE</promise>`)
 - ✅ Max 10 iterations per task (configurable)
-- ✅ State persistence for crash recovery
-- ✅ Crash loop protection (max 3 restarts in 5 minutes)
+- ✅ State persistence with YAML frontmatter
+- ✅ Automatic state archival to Ralph_History/
 
 **Autonomous Boundaries**:
 - Process all items in /Needs_Action/
@@ -167,19 +170,20 @@ Personal AI Employee is an **autonomous business assistant** that monitors multi
 
 **Example**:
 ```bash
-# Start autonomous processing
-/ralph-loop "Process all pending items in /Needs_Action"
+# Start autonomous processing (in Claude Code)
+/ralph-wiggum-runner "Process all pending items in /Needs_Action"
 
-# Check status
-python scripts/ralph_status.py
+# Check active loop state
+cat .claude/ralph-loop.local.md
 
-# Stop loop
-python scripts/stop_ralph_loop.py
+# View loop history
+ls -la My_AI_Employee/AI_Employee_Vault/Ralph_History/
 ```
 
 ### 4. Business Intelligence (User Story 4)
 
 **Weekly CEO Briefing**:
+- ✅ Automated via cron (Sunday 8:00 PM)
 - ✅ Revenue analysis (weekly, MTD, vs target)
 - ✅ Task completion tracking
 - ✅ Bottleneck identification (>1.5x expected time)
@@ -194,13 +198,16 @@ python scripts/stop_ralph_loop.py
 - Social media metrics (Facebook, Instagram, Twitter)
 - Business goals from Business_Goals.md
 
-**Example**:
+**Scheduling**:
 ```bash
-# Generate weekly briefing
-/ceo-briefing-generator "Generate weekly CEO briefing"
+# Cron entry (Sunday 8:00 PM)
+0 20 * * 0 /home/cyb3r/.nvm/versions/node/v25.2.1/bin/claude code -p 'Generate weekly CEO briefing using /ceo-briefing-generator skill. Analyze /Done/ tasks, Odoo financial data, social media metrics, and Business_Goals.md. Create comprehensive Monday morning briefing in /Reports/ folder.'
+```
 
-# Monthly audit
-/ceo-briefing-generator "Generate monthly business audit for January 2026"
+**Manual Execution**:
+```bash
+# In Claude Code
+/ceo-briefing-generator "Generate weekly CEO briefing"
 ```
 
 ### 5. Error Recovery (User Story 5)
@@ -290,25 +297,33 @@ python scripts/generate_compliance_report.py
 
 ### Running the System
 
-**Start All Watchers**:
+**Option 1: PM2 (Recommended for Production)**:
 ```bash
-python run_watcher.py --watcher all
+cd My_AI_Employee
+pm2 start ecosystem.config.js
+pm2 logs
 ```
 
-**Start Orchestrator** (in another terminal):
+**Option 2: Manual Start**:
 ```bash
+# Start all watchers
+python run_watcher.py --watcher all
+
+# Start orchestrator (in another terminal)
 python orchestrator.py
 ```
 
-**Start Ralph Wiggum Loop** (for autonomous operation):
+**Start Ralph Wiggum Loop** (in Claude Code):
 ```bash
-python scripts/start_ralph_loop.py --task "Process all pending items"
+# In Claude Code CLI
+/ralph-wiggum-runner "Process all pending items in /Needs_Action"
 ```
 
-**Generate CEO Briefing** (scheduled weekly):
+**CEO Briefing Scheduler** (automatic):
 ```bash
-# Add to crontab for Sunday 8:00 PM
-0 20 * * 0 cd /path/to/My_AI_Employee && python scripts/start_ralph_loop.py --task "Generate weekly CEO briefing"
+# Already configured in crontab (Sunday 8:00 PM)
+# Runs automatically - no manual intervention needed
+crontab -l | grep ceo-briefing
 ```
 
 ---
@@ -316,69 +331,85 @@ python scripts/start_ralph_loop.py --task "Process all pending items"
 ## Project Structure
 
 ```
-My_AI_Employee/
-├── AI_Employee_Vault/           # Obsidian vault (local markdown)
-│   ├── Needs_Action/            # Unprocessed action items
-│   ├── Pending_Approval/        # Awaiting human decision
-│   ├── Approved/                # Approved for execution
-│   ├── Rejected/                # Rejected by human
-│   ├── Failed/                  # Failed executions
-│   ├── Done/                    # Completed actions
-│   ├── Plans/                   # Planning artifacts
-│   ├── Briefings/               # CEO briefings
-│   ├── Logs/                    # Audit logs (YYYY-MM-DD.jsonl)
-│   ├── Dashboard.md             # Real-time status summary
-│   ├── Company_Handbook.md      # Rules and preferences
-│   └── Business_Goals.md        # Revenue targets and KPIs
+hackathon-0/
+├── My_AI_Employee/
+│   ├── AI_Employee_Vault/           # Obsidian vault (local markdown)
+│   │   ├── Needs_Action/            # Unprocessed action items
+│   │   ├── Pending_Approval/        # Awaiting human decision
+│   │   ├── Approved/                # Approved for execution
+│   │   ├── Rejected/                # Rejected by human
+│   │   ├── Failed/                  # Failed executions
+│   │   ├── Done/                    # Completed actions
+│   │   ├── Plans/                   # Planning artifacts
+│   │   ├── Reports/                 # CEO briefings (gitignored)
+│   │   ├── Ralph_History/           # Archived loop states (gitignored)
+│   │   ├── Alerts/                  # System alerts (gitignored)
+│   │   ├── Logs/                    # Audit logs (YYYY-MM-DD.jsonl)
+│   │   ├── Dashboard.md             # Real-time status summary
+│   │   ├── Company_Handbook.md      # Rules and preferences
+│   │   └── Business_Goals.md        # Revenue targets and KPIs
+│   │
+│   ├── watchers/                    # Perception layer
+│   │   ├── gmail_watcher.py         # Gmail OAuth2 monitoring
+│   │   ├── whatsapp_watcher.py      # WhatsApp Web (CDP)
+│   │   ├── linkedin_watcher.py      # LinkedIn REST API v2
+│   │   └── filesystem_watcher.py    # Local file drop monitoring
+│   │
+│   ├── mcp_servers/                 # Execution layer (MCP servers, gitignored)
+│   │   ├── __init__.py              # Package init (tracked)
+│   │   ├── email_mcp.py             # Gmail API email sending
+│   │   ├── odoo_mcp.py              # Odoo Community accounting (5 tools)
+│   │   ├── facebook_mcp.py          # Facebook Graph API posting
+│   │   ├── instagram_mcp.py         # Instagram Graph API posting
+│   │   ├── twitter_mcp.py           # Twitter API v2 posting
+│   │   ├── linkedin_mcp.py          # LinkedIn REST API v2 posting
+│   │   └── browser_mcp.py           # Browser automation (Playwright)
+│   │
+│   ├── utils/                       # Shared utilities
+│   │   ├── sanitizer.py             # Credential sanitization
+│   │   ├── audit_logger.py          # Action logging
+│   │   ├── auth_helper.py           # OAuth2 handling
+│   │   ├── retry_logic.py           # Exponential backoff
+│   │   └── frontmatter_utils.py     # YAML frontmatter parsing
+│   │
+│   ├── scripts/                     # Setup and management scripts
+│   │   ├── setup/                   # Initial setup scripts (gitignored)
+│   │   ├── debug/                   # Debugging utilities
+│   │   └── validate/                # Validation scripts
+│   │
+│   ├── orchestrator.py              # Orchestration layer
+│   ├── run_watcher.py               # Multi-watcher runner
+│   ├── ecosystem.config.js          # PM2 process configuration
+│   ├── .env                         # Credentials (gitignored)
+│   └── pyproject.toml               # Python dependencies
 │
-├── watchers/                    # Perception layer
-│   ├── gmail_watcher.py         # Gmail OAuth2 monitoring
-│   ├── whatsapp_watcher.py      # WhatsApp Web (CDP)
-│   ├── linkedin_watcher.py      # LinkedIn REST API v2
-│   └── filesystem_watcher.py    # Local file drop monitoring
+├── .claude/
+│   ├── hooks/
+│   │   └── stop/
+│   │       └── ralph-wiggum.js      # Stop hook for autonomous loops
+│   ├── plugins/
+│   │   └── ralph-wiggum/            # Ralph Wiggum plugin
+│   ├── skills/                      # Claude Code skills (14 skills)
+│   │   ├── needs-action-triage/     # Process action items
+│   │   ├── approval-workflow-manager/ # HITL approval
+│   │   ├── mcp-executor/            # Execute approved actions
+│   │   ├── odoo-integration/        # Accounting operations
+│   │   ├── social-media-poster/     # Multi-platform posting
+│   │   ├── ralph-wiggum-runner/     # Autonomous operation
+│   │   ├── ceo-briefing-generator/  # Business intelligence
+│   │   ├── audit-logger/            # Compliance tracking
+│   │   ├── obsidian-vault-ops/      # Vault file operations
+│   │   ├── multi-watcher-runner/    # Watcher orchestration
+│   │   ├── watcher-runner-filesystem/ # Filesystem watcher
+│   │   ├── bronze-demo-check/       # Bronze tier validation
+│   │   ├── gold-tier-validator/     # Gold tier validation
+│   │   └── skill-creator/           # Skill development guide
+│   ├── ralph-loop.local.md          # Active loop state (gitignored)
+│   └── settings.local.json          # Claude Code settings (gitignored)
 │
-├── mcp_servers/                 # Execution layer (MCP servers)
-│   ├── email_mcp.py             # Gmail API email sending
-│   ├── odoo_mcp.py              # Odoo Community accounting (5 tools)
-│   ├── facebook_mcp.py          # Facebook Graph API posting
-│   ├── instagram_mcp.py         # Instagram Graph API posting
-│   ├── twitter_mcp.py           # Twitter API v2 posting
-│   ├── linkedin_mcp.py          # LinkedIn REST API v2 posting
-│   └── browser_mcp.py           # Browser automation (Playwright)
-│
-├── utils/                       # Shared utilities
-│   ├── sanitizer.py             # Credential sanitization
-│   ├── audit_logger.py          # Action logging
-│   ├── auth_helper.py           # OAuth2 handling
-│   ├── retry_logic.py           # Exponential backoff
-│   └── frontmatter_utils.py     # YAML frontmatter parsing
-│
-├── scripts/                     # Setup and management scripts
-│   ├── setup/                   # Initial setup scripts
-│   ├── debug/                   # Debugging utilities
-│   └── validate/                # Validation scripts
-│
-├── .claude/skills/              # Claude Code skills (14 skills)
-│   ├── needs-action-triage/    # Process action items
-│   ├── approval-workflow-manager/ # HITL approval
-│   ├── mcp-executor/            # Execute approved actions
-│   ├── odoo-integration/        # Accounting operations
-│   ├── social-media-poster/     # Multi-platform posting
-│   ├── ralph-wiggum-runner/     # Autonomous operation
-│   ├── ceo-briefing-generator/  # Business intelligence
-│   ├── audit-logger/            # Compliance tracking
-│   ├── obsidian-vault-ops/      # Vault file operations
-│   ├── multi-watcher-runner/    # Watcher orchestration
-│   ├── watcher-runner-filesystem/ # Filesystem watcher
-│   ├── bronze-demo-check/       # Bronze tier validation
-│   ├── gold-tier-validator/     # Gold tier validation
-│   └── skill-creator/           # Skill development guide
-│
-├── orchestrator.py              # Orchestration layer
-├── run_watcher.py               # Multi-watcher runner
-├── ralph_wiggum_check.py        # Stop hook for autonomous loops
-├── .env                         # Credentials (gitignored)
-└── pyproject.toml               # Python dependencies
+├── .ralph_backups/                  # Loop state backups (gitignored)
+├── .gitignore                       # Git ignore patterns
+└── README.md                        # This file
 ```
 
 ---
@@ -416,12 +447,15 @@ TWITTER_ACCESS_TOKEN_SECRET=your_access_secret
 **Ralph Wiggum Loop**:
 ```bash
 RALPH_MAX_ITERATIONS=10
-RALPH_STATE_FILE=.ralph_state.json
+RALPH_ITERATION_TIMEOUT=3600  # Max seconds per iteration (1 hour)
+RALPH_CHECK_INTERVAL=5        # Seconds between completion checks
+AI_EMPLOYEE_VAULT_PATH=My_AI_Employee/AI_Employee_Vault
 ```
 
 **CEO Briefing**:
 ```bash
-CEO_BRIEFING_SCHEDULE=0 20 * * 0  # Sunday 8:00 PM
+# Scheduled via crontab (Sunday 8:00 PM)
+# 0 20 * * 0 /path/to/claude code -p 'Generate weekly CEO briefing...'
 BUSINESS_GOALS_FILE=AI_Employee_Vault/Business_Goals.md
 ```
 
@@ -581,6 +615,27 @@ All external actions logged to `AI_Employee_Vault/Logs/YYYY-MM-DD.jsonl`:
 
 ### Files Protected from GitHub
 
+**Credentials and Environment**:
+- `.env` - All API keys, tokens, passwords
+- `.env.*` - Environment-specific configs
+- `.mcp.json` - MCP server credentials
+
+**Ralph Wiggum Loop State**:
+- `.ralph_state.json` - Active loop state
+- `.ralph_backups/` - State backups for crash recovery
+- `.claude/ralph-loop.local.md` - Current loop state
+- `My_AI_Employee/AI_Employee_Vault/Ralph_History/*.md` - Archived loops
+
+**Business Intelligence**:
+- `My_AI_Employee/AI_Employee_Vault/Reports/*.md` - CEO briefings with financial data
+- `My_AI_Employee/AI_Employee_Vault/Alerts/*.md` - System alerts
+
+**Offline Operation Queues**:
+- `.odoo_queue.jsonl` - Queued Odoo operations
+- `.facebook_queue.jsonl` - Queued Facebook posts
+- `.instagram_queue.jsonl` - Queued Instagram posts
+- `.twitter_queue.jsonl` - Queued Twitter posts
+
 **MCP Servers** (11 files):
 - All `mcp_servers/*.py` files (except `__init__.py`)
 - Directory structure preserved with `.gitkeep`
@@ -595,7 +650,11 @@ All external actions logged to `AI_Employee_Vault/Logs/YYYY-MM-DD.jsonl`:
 - `Done/*.md` - Completed emails, invoices, posts with real business data
 - `Inbox/*` - Uploaded files with sensitive information
 
-**Total Protected**: 44+ files and directories
+**Claude Code Settings**:
+- `.claude/settings.local.json` - Local settings
+- `.claude/state/` - Session state
+
+**Total Protected**: 60+ files and directories
 
 ### Audit Trail
 
@@ -625,18 +684,20 @@ All external actions logged to `AI_Employee_Vault/Logs/YYYY-MM-DD.jsonl`:
 - ✅ Engagement metrics aggregation
 
 **User Story 3: Autonomous Operation** (20/20)
-- ✅ Ralph Wiggum Loop with stop hook
-- ✅ File movement detection as completion signal
-- ✅ Max iterations limit (10)
-- ✅ State persistence for crash recovery
-- ✅ Crash loop protection
+- ✅ Ralph Wiggum Loop with JavaScript stop hook
+- ✅ File movement detection (Needs_Action/ → Done/)
+- ✅ Promise-based completion detection
+- ✅ Max iterations limit (10, configurable)
+- ✅ State persistence with YAML frontmatter
+- ✅ Automatic state archival to Ralph_History/
 
 **User Story 4: Business Intelligence** (20/20)
-- ✅ Weekly CEO briefing generation
+- ✅ Weekly CEO briefing generation (automated via cron)
 - ✅ Revenue and expense analysis
 - ✅ Bottleneck identification (>1.5x threshold)
 - ✅ Proactive suggestions
 - ✅ Social media performance summary
+- ✅ Scheduled Sunday 8:00 PM (fully automatic)
 
 **User Story 5: Error Recovery** (20/20)
 - ✅ Automatic token refresh
@@ -700,4 +761,4 @@ For issues, questions, or feature requests:
 **Built with**: Python 3.13, FastMCP, OdooRPC, Playwright, Google APIs, Facebook Graph API, Twitter API, Claude Code
 **Architecture**: Hackathon Zero Five-Layer Autonomous AI Employee System
 **Status**: 🏆 Gold Tier Complete - Ready for Hackathon Submission
-**Submission Date**: February 8, 2026
+**Last Updated**: February 13, 2026

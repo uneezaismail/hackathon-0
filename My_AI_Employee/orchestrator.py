@@ -193,10 +193,10 @@ Use the /needs-action-triage skill to:
 The file has been detected by a watcher and needs processing."""
 
         try:
-            # Call Claude Code via subprocess (using ccr code command)
+            # Call Claude Code via subprocess (using claude code command)
             # Timeout increased to 300s (5 min) for complex tasks like Odoo operations
             result = subprocess.run(
-                ['ccr', 'code', '-p', prompt],
+                ['claude', 'code', '-p', prompt],
                 capture_output=True,
                 text=True,
                 timeout=300

@@ -99,14 +99,30 @@ My_AI_Employee/AI_Employee_Vault/Approved/*.md
 My_AI_Employee/AI_Employee_Vault/Rejected/*.md
 My_AI_Employee/AI_Employee_Vault/Briefings/*.md
 
-# Gold Tier - Ralph Wiggum Loop state
+# Gold Tier - Ralph Wiggum Loop state and backups
 .ralph_state.json
+.ralph_backups/
+.claude/ralph-loop.local.md
+My_AI_Employee/AI_Employee_Vault/Ralph_History/*.md
+!My_AI_Employee/AI_Employee_Vault/Ralph_History/.gitkeep
+
+# Gold Tier - CEO Briefings (may contain financial data)
+My_AI_Employee/AI_Employee_Vault/Reports/*.md
+!My_AI_Employee/AI_Employee_Vault/Reports/.gitkeep
+
+# Gold Tier - System Alerts
+My_AI_Employee/AI_Employee_Vault/Alerts/*.md
+!My_AI_Employee/AI_Employee_Vault/Alerts/.gitkeep
 
 # Gold Tier - Offline operation queues
 .odoo_queue.jsonl
 .facebook_queue.jsonl
 .instagram_queue.jsonl
 .twitter_queue.jsonl
+
+# Claude Code settings and state
+.claude/settings.local.json
+.claude/state/
 
 # Test watch folder content
 My_AI_Employee/test_watch_folder/*.txt

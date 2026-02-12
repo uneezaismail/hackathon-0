@@ -1,17 +1,19 @@
 """
 OAuth 2.0 helper for Gmail API and other Google services.
 Inspired by Context7 patterns for google-api-python-client and google-auth-oauthlib.
+
+PERFORMANCE: Uses lazy imports to avoid 30-60s startup delay from Google API libraries.
 """
 
 import os
 import logging
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, TYPE_CHECKING
 
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build, Resource
+# Lazy imports - only load Google API libraries when actually needed
+if TYPE_CHECKING:
+    from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import Resource
 
 
 class OAuth2Helper:
@@ -32,7 +34,7 @@ class OAuth2Helper:
         self._creds: Credentials = None
         self.logger = logging.getLogger(__name__)
 
-    def get_credentials(self) -> Credentials:
+    def get_credentials(self):
         """
         Get valid OAuth 2.0 credentials, refreshing if necessary.
 
@@ -43,6 +45,11 @@ class OAuth2Helper:
             FileNotFoundError: If credentials.json not found
             Exception: If authentication fails
         """
+        # Lazy import - only load when credentials are actually needed
+        from google.oauth2.credentials import Credentials
+        from google.auth.transport.requests import Request
+        from google_auth_oauthlib.flow import InstalledAppFlow
+
         # Try to load existing token
         if self.token_file.exists():
             try:
@@ -97,7 +104,7 @@ class OAuth2Helper:
         except Exception as e:
             self.logger.error(f"Failed to save token: {e}")
 
-    def build_service(self, service_name: str, version: str) -> Resource:
+    def build_service(self, service_name: str, version: str):
         """
         Build a Google API service using authenticated credentials.
 
@@ -108,6 +115,9 @@ class OAuth2Helper:
         Returns:
             Google API Resource object
         """
+        # Lazy import - only load when service is actually built
+        from googleapiclient.discovery import build
+
         creds = self.get_credentials()
         return build(service_name, version, credentials=creds)
 
